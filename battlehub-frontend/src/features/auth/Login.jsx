@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Auth } from "../../utils/Auth"; // 👈 import helper
+import { Auth } from "../../utils/auth"; // 👈 import helper
 
 export default function Login() {
   const [formData, setFormData] = useState({
