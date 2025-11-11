@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import Login from './features/auth/Login';
 import Register from './features/auth/Register';
@@ -18,6 +16,13 @@ import JoinSolo from './features/dashboard/matches/JoinSolo';
 import JoinDuo from './features/dashboard/matches/JoinDuo';
 import Wallet from './features/dashboard/Wallet';
 import WatchOnYouTube from './features/dashboard/WatchOnYoutube';
+import AdminLayout from './features/admin/AdminLayout';
+import CreateMatch from './features/admin/CreateMatch';
+import ApprovePayments from './features/admin/ApprovePayments';
+import UpdateResults from './features/admin/UpdateResults';
+import AllUsers from './features/admin/AllUsers';
+import SetPrizePool from './features/admin/SetPrizePool';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -28,7 +33,11 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Register />} />
-          <Route path="/dashboard" element={<DashboardLayout />}>
+          {/* <Route path="/dashboard" element={<DashboardLayout />}> */}
+          <Route path="/dashboard" element={ 
+            <ProtectedRoute allowed="user">
+              <DashboardLayout />
+            </ProtectedRoute>}>
           <Route index element={<Navigate to="matches" replace />} />
           <Route path="matches" element={<Matches />}>
             <Route index element={<Navigate to="squad" replace />} />{/* Default tab */}
@@ -45,8 +54,22 @@ function App() {
           <Route path="completed" element={<CompletedMatches />} />
           <Route path="recharge" element={<Recharge />} />
           <Route path="wallet" element={<Wallet />} /> 
-           <Route path="watch" element={<WatchOnYouTube />} />
+          <Route path="watch" element={<WatchOnYouTube />} />
         </Route>
+        {/* <Route path="/admin" element={<AdminLayout />}> */}
+        <Route path="/admin" element={ 
+          <ProtectedRoute allowed="admin">
+              <AdminLayout />
+            </ProtectedRoute>}>
+        <Route index element={<Navigate to="approve-payment" replace />} />
+          <Route path="approve-payment" element={<ApprovePayments />} />
+          <Route path="create-match" element={<CreateMatch />} />
+          <Route path="prize" element={<SetPrizePool />} />
+          {/* <Route path="schedule" element={<Schedule />} /> */}
+          <Route path="update-results" element={<UpdateResults />} />
+<Route path="registered-users" element={<AllUsers />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>
     </Router>

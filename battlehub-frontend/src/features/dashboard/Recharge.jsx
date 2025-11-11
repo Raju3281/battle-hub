@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
+import EncryptedStorage from "../../utils/encryptedStorage";
 
 export default function Recharge() {
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState("form"); // form | payment | processing | success
   const [selectedMethod, setSelectedMethod] = useState("");
   const [uploadFile, setUploadFile] = useState(null);
-  const [wallet, setWallet] = useState(120); // mock wallet amount
+  const [wallet, setWallet] = useState(EncryptedStorage.get('user_balance')); // mock wallet amount
   const [timer, setTimer] = useState(10); // mock processing time (seconds)
 
   // simulate approval timer
@@ -16,6 +17,7 @@ export default function Recharge() {
     } else if (timer === 0 && step === "processing") {
       setStep("success");
       setWallet((prev) => prev + parseInt(amount || 0));
+      EncryptedStorage.set("user_balance", wallet + parseInt(amount || 0));
     }
   }, [timer, step, amount]);
 

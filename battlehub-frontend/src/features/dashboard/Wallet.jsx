@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import EncryptedStorage from "../../utils/encryptedStorage";
 
 export default function Wallet() {
   const navigate = useNavigate();
-  const [balance, setBalance] = useState(120); // mock starting balance
+  const [balance, setBalance] = useState(); // mock starting balance
   const [upiId, setUpiId] = useState("raju@upi");
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
@@ -29,7 +30,11 @@ export default function Wallet() {
     alert(`🪙 Withdraw request for ₹${withdrawAmount} sent for approval.`);
     setWithdrawAmount("");
   };
-
+useEffect(() => {
+    const balance = EncryptedStorage.get("user_balance");
+    console.log("Balance:", balance); // 500.75
+    setBalance(balance);
+  }, []);
   return (
     <div className="max-w-3xl mx-auto bg-gray-900/80 border border-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg text-white">
       {/* Title */}

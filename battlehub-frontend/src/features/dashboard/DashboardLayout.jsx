@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import EncryptedStorage from "../../utils/encryptedStorage";
 
 export default function DashboardLayout() {
   const [isOpen, setIsOpen] = useState(true);
@@ -11,6 +12,11 @@ const navigate = useNavigate();
     { name: "Recharge", path: "recharge" },
     { name: "Watch on Youtube", path: "watch" },
   ];
+  useEffect(() => {
+    EncryptedStorage.set("user_balance", 0);
+
+
+  }, []);
 
   return (
     <div className="w-full h-full flex bg-gray-950 text-white">
@@ -53,6 +59,14 @@ const navigate = useNavigate();
         ))}
         </nav>
         </div>
+         {/* Logout / Support */}
+        {/* <div className="border-t border-gray-800 pt-4 mt-6"> */}
+          <button
+            onClick={() => navigate("/login")}
+            className="block w-full text-left rounded-lg px-3 font-medium text-gray-400 hover:bg-gray-800 hover:text-yellow-400"
+          >
+            🚪 Logout
+          </button>
 
         {/* Help/Support fixed at bottom */}
         <div className="border-t border-gray-800 pt-4 mt-6">
@@ -92,7 +106,7 @@ const navigate = useNavigate();
       className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-lg border border-gray-700 cursor-pointer hover:bg-gray-700 transition"
     >
       <span className="text-yellow-400 text-lg">💰</span>
-      <span className="font-semibold text-yellow-400">₹120</span>
+      <span className="font-semibold text-yellow-400">{EncryptedStorage.get("user_balance")}</span>
     </div>
 
     {/* Profile */}

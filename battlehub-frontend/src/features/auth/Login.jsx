@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Auth } from "../../utils/Auth"; // 👈 import helper
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -8,8 +9,16 @@ export default function Login() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
-
   const navigate = useNavigate();
+
+  // 🧠 Auto redirect if already logged in
+  useEffect(() => {
+    const user = Auth.getUser();
+    if (user) {
+      if (user.userId === "admin") navigate("/dashboard/admin", { replace: true });
+      else navigate("/dashboard", { replace: true });
+    }
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,16 +27,31 @@ export default function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log("User Logged In:", formData);
-    alert("Login Successful! (Connect backend later)");
+    const { username, password } = formData;
 
-    // Example navigation after login:
-    navigate("/dashboard");
+    if (!username || !password) {
+      alert("Please enter both username and password!");
+      return;
+    }
+
+    // 🧠 Simulate login (you can later replace this with API call)
+    console.log("User Logged In:", username);
+    alert("✅ Login Successful!");
+
+    // Save user in localStorage
+    Auth.login({ userId: username });
+
+    // Redirect based on role
+    if (username.toLowerCase() === "admin") {
+      navigate("/admin", { replace: true });
+    } else {
+      navigate("/dashboard", { replace: true });
+    }
   };
 
   return (
-<div className="w-full bg-gradient-to-br rounded-lg to-black flex justify-center items-center">
-      {/* Background Glow (optional aesthetic) */}
+    <div className="w-full min-h-screen bg-gradient-to-br from-gray-950 to-black flex justify-center items-center">
+      {/* Background Glow */}
       <div className="absolute -z-10 w-[500px] h-[500px] bg-yellow-500/10 blur-3xl rounded-full"></div>
 
       {/* Login Card */}
@@ -92,10 +116,7 @@ export default function Login() {
               />
               Remember Me
             </label>
-            <a
-              href="#"
-              className="text-yellow-400 hover:underline font-medium"
-            >
+            <a href="#" className="text-yellow-400 hover:underline font-medium">
               Forgot Password?
             </a>
           </div>
@@ -112,10 +133,7 @@ export default function Login() {
         {/* No account */}
         <p className="text-center text-sm text-gray-400 mt-5">
           Don’t have an account?{" "}
-          <a
-            href="/register"
-            className="text-yellow-400 hover:underline font-medium"
-          >
+          <a href="/register" className="text-yellow-400 hover:underline font-medium">
             Sign Up
           </a>
         </p>
