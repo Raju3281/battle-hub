@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import EncryptedStorage from "../../utils/encryptedStorage";
+import { Auth } from "../../utils/auth";
 
 export default function AdminLayout() {
   const [isOpen, setIsOpen] = useState(true);
@@ -58,7 +59,9 @@ export default function AdminLayout() {
         {/* Logout / Support */}
         <div className="border-t border-gray-800 pt-4 mt-6">
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => {
+              Auth.logout();
+              navigate("/login")}}
             className="block w-full text-left rounded-lg px-3 py-2 font-medium text-gray-400 hover:bg-gray-800 hover:text-yellow-400"
           >
             🚪 Logout

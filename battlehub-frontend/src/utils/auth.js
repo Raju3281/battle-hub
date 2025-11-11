@@ -14,5 +14,7 @@ export const Auth = {
   // Logout and clear
   logout: () => {
     localStorage.removeItem("battlehub_user");
+    window.location.reload();
+    window.location.href = "/login";
   },
 };
