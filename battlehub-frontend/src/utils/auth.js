@@ -8,7 +8,7 @@ export const Auth = {
   // Retrieve current user
   getUser: () => {
     const data = localStorage.getItem("battlehub_user");
-    return data ? JSON.parse(data) : null;
+    return data ? (JSON.parse(data)).role : null;
   },
 
   // Logout and clear
@@ -17,7 +17,7 @@ export const Auth = {
     setTimeout(() => {
   window.location.reload();
     window.location.href = "/login";
-    }, 3000);
+    }, 2000);
   
   },
 };

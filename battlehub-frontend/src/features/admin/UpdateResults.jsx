@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from "react";
+import api from "../../utils/api"; // ✅ common axios instance
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function UpdateResults() {
   const [matches, setMatches] = useState([]);
+  const [completedMatches, setCompletedMatches] = useState([]);
   const [teams, setTeams] = useState([]);
   const [selectedMatch, setSelectedMatch] = useState("");
-  const [winners, setWinners] = useState([
-    { team: "", kills: "", prize: "", leaderId: "", leaderPhone: "" },
-  ]);
+  const [winners, setWinners] = useState([]);
   const [highestKill, setHighestKill] = useState({
     team: "",
     prize: "",
@@ -14,108 +16,95 @@ export default function UpdateResults() {
     leaderPhone: "",
   });
   const [remarks, setRemarks] = useState("");
-  const [allResults, setAllResults] = useState([]);
+  const [loadingMatches, setLoadingMatches] = useState(false);
   const [viewData, setViewData] = useState(null);
+  const [viewLoading, setViewLoading] = useState(false);
 
-  // Mock Matches
+  // ✅ Fetch all matches (pending + completed)
   useEffect(() => {
-    setMatches([
-      { id: "m001", name: "Match 1 – Erangel", type: "squad", prizePool: 500 },
-      { id: "m002", name: "Match 2 – Miramar", type: "duo", prizePool: 300 },
-      { id: "m003", name: "Match 3 – Solo Rush", type: "solo", prizePool: 200 },
-    ]);
-  }, []);
+    const fetchMatches = async () => {
+      try {
+        setLoadingMatches(true);
+        const { data } = await api.get("/matches");
 
-  // Mock Results
-  useEffect(() => {
-    setAllResults([
-      {
-        id: "m001",
-        name: "Match 1 – Erangel",
-        prizePool: 500,
-        winners: [
-          {
-            team: "Team Alpha",
-            kills: 12,
-            prize: 250,
-            leaderId: "U001",
-            leaderPhone: "9999990001",
-          },
-          {
-            team: "Team Bravo",
-            kills: 9,
-            prize: 150,
-            leaderId: "U002",
-            leaderPhone: "9999990002",
-          },
-        ],
-        highestKill: {
-          team: "Team Alpha",
-          prize: 50,
-          leaderId: "U001",
-          leaderPhone: "9999990001",
-        },
-        remarks: "Tough competition!",
-      },
-    ]);
-  }, []);
+        const matchList = Array.isArray(data)
+          ? data
+          : Array.isArray(data.matches)
+          ? data.matches
+          : [];
 
-  // Mock Teams by Match
-  useEffect(() => {
-    if (!selectedMatch) {
-      setTeams([]);
-      return;
-    }
-
-    const mockTeams = {
-      m001: [
-        { name: "Team Alpha", leaderId: "U001", leaderPhone: "9999990001" },
-        { name: "Team Bravo", leaderId: "U002", leaderPhone: "9999990002" },
-        { name: "Team Charlie", leaderId: "U003", leaderPhone: "9999990003" },
-        { name: "Team Delta", leaderId: "U004", leaderPhone: "9999990004" },
-      ],
-      m002: [
-        { name: "Team Omega", leaderId: "U005", leaderPhone: "9999990005" },
-        { name: "Team Titan", leaderId: "U006", leaderPhone: "9999990006" },
-      ],
-      m003: [
-        { name: "Player Raju", leaderId: "U007", leaderPhone: "9999990007" },
-        { name: "Player John", leaderId: "U008", leaderPhone: "9999990008" },
-      ],
+        setMatches(matchList.filter((m) => m.status !== "completed"));
+        setCompletedMatches(matchList.filter((m) => m.status === "completed"));
+      } catch (error) {
+        console.error("❌ Error fetching matches:", error);
+        toast.error("Failed to load matches. Please try again.");
+      } finally {
+        setLoadingMatches(false);
+      }
     };
-    setTeams(mockTeams[selectedMatch] || []);
+
+    fetchMatches();
+  }, []);
+
+  // ✅ Auto-load prize distribution and teams from backend
+  useEffect(() => {
+    const fetchMatchDetails = async () => {
+      if (!selectedMatch) {
+        setTeams([]);
+        setWinners([]);
+        return;
+      }
+
+      try {
+        const { data: match } = await api.get(`/matches/${selectedMatch}`);
+
+        // 🟢 Auto-load prizeDistribution
+        if (match.prizeDistribution?.length > 0) {
+          const autoWinners = match.prizeDistribution.map((p) => ({
+            rank: p.rank,
+            team: "",
+            kills: "",
+            prize: p.amount,
+            leaderId: "",
+            leaderPhone: "",
+          }));
+          setWinners(autoWinners);
+        } else {
+          setWinners([{ team: "", kills: "", prize: "", leaderId: "", leaderPhone: "" }]);
+        }
+
+        // 🟢 Mock teams for now
+        const mockTeams = [
+          { name: "Team Alpha", leaderId: "U001", leaderPhone: "9999990001" },
+          { name: "Team Bravo", leaderId: "U002", leaderPhone: "9999990002" },
+          { name: "Team Charlie", leaderId: "U003", leaderPhone: "9999990003" },
+          { name: "Team Delta", leaderId: "U004", leaderPhone: "9999990004" },
+        ];
+        setTeams(mockTeams);
+      } catch (error) {
+        console.error("❌ Error loading match details:", error);
+        toast.error("Failed to load match details.");
+      }
+    };
+
+    fetchMatchDetails();
   }, [selectedMatch]);
 
-  // Derived values
+  // 🧮 Derived values
   const selectedMatchData = useMemo(
-    () => matches.find((m) => m.id === selectedMatch),
+    () => matches.find((m) => m._id === selectedMatch),
     [selectedMatch, matches]
   );
 
   const totalDistributed = useMemo(() => {
-    const total = winners.reduce(
-      (sum, w) => sum + (parseInt(w.prize) || 0),
-      0
-    );
+    const total = winners.reduce((sum, w) => sum + (parseInt(w.prize) || 0), 0);
     const hkPrize = parseInt(highestKill.prize) || 0;
     return total + hkPrize;
   }, [winners, highestKill]);
 
-  const remainingPrize =
-    (selectedMatchData?.prizePool || 0) - totalDistributed;
+  const remainingPrize = (selectedMatchData?.prizePool || 0) - totalDistributed;
 
-  // Add / Remove rows
-  const addWinnerRow = () =>
-    setWinners([
-      ...winners,
-      { team: "", kills: "", prize: "", leaderId: "", leaderPhone: "" },
-    ]);
-
-  const removeWinnerRow = (index) => {
-    if (winners.length === 1) return;
-    setWinners(winners.filter((_, i) => i !== index));
-  };
-
+  // ✅ Winner & Kill change handlers
   const handleWinnerChange = (index, field, value) => {
     let updated = [...winners];
     if (field === "team") {
@@ -142,35 +131,66 @@ export default function UpdateResults() {
     } else setHighestKill({ ...highestKill, [field]: value });
   };
 
-  const handleSubmit = (e) => {
+  // ✅ Submit Results
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedMatch) return alert("Select a match first!");
+    if (!selectedMatch) return toast.error("Select a match first!");
 
     const match = selectedMatchData;
-    const resultData = {
-      id: match.id,
-      name: match.name,
-      prizePool: match.prizePool,
-      winners,
-      highestKill,
+    const payload = {
+      winners: winners.map((w) => ({
+        team: w.team,
+        kills: parseInt(w.kills) || 0,
+        prize: parseInt(w.prize) || 0,
+        leaderId: w.leaderId,
+        leaderPhone: w.leaderPhone,
+        userId: "69140c8f1366a8f6e1545c84", // replace with actual user ID
+      })),
+      highestKill: {
+        team: highestKill.team,
+        prize: parseInt(highestKill.prize) || 0,
+        leaderId: highestKill.leaderId,
+        leaderPhone: highestKill.leaderPhone,
+        userId: "69140c8f1366a8f6e1545c84",
+      },
       remarks,
     };
 
-    setAllResults((prev) => {
-      const exists = prev.find((r) => r.id === match.id);
-      return exists
-        ? prev.map((r) => (r.id === match.id ? resultData : r))
-        : [...prev, resultData];
-    });
+    try {
+      await api.put(`/results/${match._id}`, payload);
+      toast.success("🏆 Match results updated successfully!");
 
-    alert(`✅ Results saved for ${match.name}`);
-    setWinners([{ team: "", kills: "", prize: "", leaderId: "", leaderPhone: "" }]);
-    setHighestKill({ team: "", prize: "", leaderId: "", leaderPhone: "" });
-    setRemarks("");
+      setCompletedMatches((prev) => [...prev, { ...match, status: "completed" }]);
+      setMatches(matches.filter((m) => m._id !== match._id));
+
+      // Reset form
+      setSelectedMatch("");
+      setWinners([]);
+      setHighestKill({ team: "", prize: "", leaderId: "", leaderPhone: "" });
+      setRemarks("");
+    } catch (err) {
+      console.error("❌ Error updating results:", err);
+      toast.error(err.response?.data?.message || "Failed to update results.");
+    }
+  };
+
+  // ✅ View Completed Match Details
+  const handleViewMatch = async (matchId) => {
+    try {
+      setViewLoading(true);
+      const { data } = await api.get(`/matches/${matchId}`);
+      setViewData(data);
+    } catch (error) {
+      console.error("❌ Error fetching match details:", error);
+      toast.error("Failed to fetch match details.");
+    } finally {
+      setViewLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen w-full overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
+      <ToastContainer theme="dark" position="top-right" />
       <h2 className="text-2xl font-bold text-yellow-400 mb-6">
         Update Match Results 🏆
       </h2>
@@ -178,64 +198,60 @@ export default function UpdateResults() {
       {/* Match Selector */}
       <div className="mb-6">
         <label className="block text-gray-300 mb-2">Select Match</label>
-        <select
-          value={selectedMatch}
-          onChange={(e) => setSelectedMatch(e.target.value)}
-          className="bg-gray-800 text-white p-3 rounded-lg border border-gray-700 w-full sm:w-80"
-        >
-          <option value="">-- Choose a match --</option>
-          {matches.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.name} ({m.type.toUpperCase()})
-            </option>
-          ))}
-        </select>
+        {loadingMatches ? (
+          <p className="text-gray-400">Loading matches...</p>
+        ) : (
+          <select
+            value={selectedMatch}
+            onChange={(e) => setSelectedMatch(e.target.value)}
+            className="bg-gray-800 text-white p-3 rounded-lg border border-gray-700 w-full sm:w-80"
+          >
+            <option value="">-- Choose a match --</option>
+            {matches.length > 0 ? (
+              matches.map((m) => (
+                <option key={m._id} value={m._id}>
+                  {m.matchName} ({m.matchType?.toUpperCase?.()})
+                </option>
+              ))
+            ) : (
+              <option disabled>No pending matches</option>
+            )}
+          </select>
+        )}
       </div>
 
-      {/* Prize Pool Info */}
-      {selectedMatch && (
-        <div className="mb-6 text-gray-300 bg-gray-900 border border-gray-800 p-4 rounded-lg">
-          <p>
-            💰 Prize Pool:{" "}
-            <span className="text-yellow-400 font-semibold">
-              ₹{selectedMatchData?.prizePool}
-            </span>
-          </p>
-          <p>
-            🎁 Distributed:{" "}
-            <span className="text-yellow-400 font-semibold">
-              ₹{totalDistributed}
-            </span>
-          </p>
-          <p>
-            💵 Remaining:{" "}
-            <span
-              className={`font-semibold ${
-                remainingPrize < 0 ? "text-red-500" : "text-green-400"
-              }`}
-            >
-              ₹{remainingPrize < 0 ? 0 : remainingPrize}
-            </span>
-          </p>
-        </div>
-      )}
-
-      {/* Responsive Form */}
-      {selectedMatch && (
+      {/* Match Info + Form */}
+      {selectedMatch && selectedMatchData && (
         <form
           onSubmit={handleSubmit}
           className="space-y-6 w-full max-w-4xl border border-gray-800 p-6 rounded-xl bg-gray-900 mx-auto"
         >
           <h3 className="text-yellow-400 font-semibold text-lg mb-3">
-            Prize Distribution for {selectedMatchData?.name}
+            Prize Distribution for {selectedMatchData?.matchName}
           </h3>
 
+          <div className="mb-4 text-gray-300 bg-gray-950 border border-gray-800 p-3 rounded-lg">
+            <p>💰 Prize Pool: ₹{selectedMatchData?.prizePool}</p>
+            <p>🎁 Distributed: ₹{totalDistributed}</p>
+            <p>
+              💵 Remaining:{" "}
+              <span
+                className={remainingPrize < 0 ? "text-red-500" : "text-green-400"}
+              >
+                ₹{remainingPrize < 0 ? 0 : remainingPrize}
+              </span>
+            </p>
+          </div>
+
+          {/* Winners Section */}
           {winners.map((w, i) => (
             <div
               key={i}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 border border-gray-800 p-4 rounded-lg bg-gray-950"
             >
-              {/* Team */}
+              <span className="text-yellow-400 font-semibold text-sm">
+                Rank #{w.rank || i + 1}
+              </span>
               <div>
                 <label className="block text-gray-300 mb-1 text-sm">Team</label>
                 <select
@@ -250,14 +266,8 @@ export default function UpdateResults() {
                     </option>
                   ))}
                 </select>
-                {w.leaderPhone && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    📞 {w.leaderPhone} ({w.leaderId})
-                  </p>
-                )}
               </div>
 
-              {/* Kills */}
               <div>
                 <label className="block text-gray-300 mb-1 text-sm">Kills</label>
                 <input
@@ -268,44 +278,19 @@ export default function UpdateResults() {
                 />
               </div>
 
-              {/* Prize */}
               <div>
-                <label className="block text-gray-300 mb-1 text-sm">
-                  Prize (₹)
-                </label>
+                <label className="block text-gray-300 mb-1 text-sm">Prize (₹)</label>
                 <input
                   type="number"
                   value={w.prize}
-                  onChange={(e) => handleWinnerChange(i, "prize", e.target.value)}
-                  className="bg-gray-800 text-white w-full p-2 rounded-lg border border-gray-700 text-sm"
+                  disabled
+                  className="bg-gray-800 text-gray-400 w-full p-2 rounded-lg border border-gray-700 text-sm cursor-not-allowed"
                 />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-2 justify-start sm:justify-end col-span-full lg:col-span-2">
-                {i === winners.length - 1 && (
-                  <button
-                    type="button"
-                    onClick={addWinnerRow}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-sm"
-                  >
-                    ➕ Add
-                  </button>
-                )}
-                {winners.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeWinnerRow(i)}
-                    className="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-lg text-sm"
-                  >
-                    🗑 Remove
-                  </button>
-                )}
               </div>
             </div>
           ))}
 
-          {/* Highest Kill */}
+          {/* Highest Kill Section */}
           <div className="border border-gray-800 p-4 rounded-lg bg-gray-950 mt-6">
             <h4 className="text-yellow-400 font-semibold mb-2">
               💀 Highest Kill Bonus
@@ -327,16 +312,9 @@ export default function UpdateResults() {
                     </option>
                   ))}
                 </select>
-                {highestKill.leaderPhone && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    📞 {highestKill.leaderPhone} ({highestKill.leaderId})
-                  </p>
-                )}
               </div>
               <div>
-                <label className="block text-gray-300 mb-1 text-sm">
-                  Prize (₹)
-                </label>
+                <label className="block text-gray-300 mb-1 text-sm">Prize (₹)</label>
                 <input
                   type="number"
                   value={highestKill.prize}
@@ -351,9 +329,7 @@ export default function UpdateResults() {
 
           {/* Remarks */}
           <div>
-            <label className="block text-gray-300 mb-1 mt-3 text-sm">
-              Remarks
-            </label>
+            <label className="block text-gray-300 mb-1 mt-3 text-sm">Remarks</label>
             <textarea
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
@@ -371,40 +347,42 @@ export default function UpdateResults() {
         </form>
       )}
 
-      {/* Results History */}
+      {/* ✅ Completed Matches */}
       <div className="mt-10">
         <h3 className="text-xl font-semibold text-yellow-400 mb-4">
-          Previous Match Results 📋
+          Completed Matches History 📜
         </h3>
-        {allResults.length === 0 ? (
-          <p className="text-gray-400">No match results yet.</p>
+        {completedMatches.length === 0 ? (
+          <p className="text-gray-400">No completed matches yet.</p>
         ) : (
           <div className="overflow-x-auto border border-gray-800 rounded-lg">
             <table className="w-full text-left text-gray-300 text-sm">
               <thead className="bg-gray-800 text-yellow-400">
                 <tr>
                   <th className="p-3 border-b border-gray-700">Match</th>
-                  <th className="p-3 border-b border-gray-700">Top Teams</th>
+                  <th className="p-3 border-b border-gray-700">Type</th>
                   <th className="p-3 border-b border-gray-700">Prize Pool</th>
-                  <th className="p-3 border-b border-gray-700">Actions</th>
+                  <th className="p-3 border-b border-gray-700">Time</th>
+                  <th className="p-3 border-b border-gray-700">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {allResults.map((m) => (
-                  <tr key={m.id} className="hover:bg-gray-800 transition">
-                    <td className="p-3 border-b border-gray-800">{m.name}</td>
-                    <td className="p-3 border-b border-gray-800 text-yellow-400">
-                      {m.winners.map((w) => w.team).join(", ")}
-                    </td>
+                {completedMatches.map((m) => (
+                  <tr key={m._id} className="hover:bg-gray-800 transition">
+                    <td className="p-3 border-b border-gray-800">{m.matchName}</td>
                     <td className="p-3 border-b border-gray-800">
-                      ₹{m.prizePool}
+                      {m.matchType?.toUpperCase?.()}
+                    </td>
+                    <td className="p-3 border-b border-gray-800">₹{m.prizePool}</td>
+                    <td className="p-3 border-b border-gray-800 text-gray-400">
+                      {new Date(m.matchTime).toLocaleString()}
                     </td>
                     <td className="p-3 border-b border-gray-800">
                       <button
-                        onClick={() => setViewData(m)}
+                        onClick={() => handleViewMatch(m._id)}
                         className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm"
                       >
-                        View
+                        View 👁️
                       </button>
                     </td>
                   </tr>
@@ -415,7 +393,7 @@ export default function UpdateResults() {
         )}
       </div>
 
-      {/* Modal View */}
+      {/* 🟡 VIEW MODAL */}
       {viewData && (
         <div
           className="fixed inset-0 bg-black/70 flex justify-center items-center z-50"
@@ -425,64 +403,71 @@ export default function UpdateResults() {
             onClick={(e) => e.stopPropagation()}
             className="bg-gray-900 border border-yellow-500 rounded-lg p-6 w-[95%] sm:w-[90%] max-w-2xl shadow-lg overflow-y-auto max-h-[90vh]"
           >
-            <h3 className="text-xl text-yellow-400 font-bold mb-3">
-              {viewData.name}
-            </h3>
-            <p className="text-gray-300 mb-3">
-              💰 Prize Pool: ₹{viewData.prizePool}
-            </p>
+            {viewLoading ? (
+              <p className="text-gray-400 text-center">Loading match details...</p>
+            ) : (
+              <>
+                <h3 className="text-xl text-yellow-400 font-bold mb-3">
+                  {viewData.matchName}
+                </h3>
+                <p className="text-gray-300 mb-1">
+                  🎮 Type: {viewData.matchType?.toUpperCase?.()}
+                </p>
+                <p className="text-gray-300 mb-1">💰 Prize Pool: ₹{viewData.prizePool}</p>
+                <p className="text-gray-300 mb-1">
+                  🕒 Match Time: {new Date(viewData.matchTime).toLocaleString()}
+                </p>
 
-            <table className="w-full text-left text-gray-300 border border-gray-800 rounded mb-3 text-sm">
-              <thead className="bg-gray-800 text-yellow-400">
-                <tr>
-                  <th className="p-2">Rank</th>
-                  <th className="p-2">Team</th>
-                  <th className="p-2">Leader</th>
-                  <th className="p-2">Kills</th>
-                  <th className="p-2">Prize (₹)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {viewData.winners.map((w, i) => (
-                  <tr key={i} className="border-b border-gray-800">
-                    <td className="p-2 text-gray-400">#{i + 1}</td>
-                    <td className="p-2">{w.team}</td>
-                    <td className="p-2 text-gray-400 text-xs">
-                      {w.leaderPhone} ({w.leaderId})
-                    </td>
-                    <td className="p-2">{w.kills}</td>
-                    <td className="p-2 text-yellow-400 font-semibold">
-                      ₹{w.prize}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                {viewData.results?.winners?.length > 0 && (
+                  <>
+                    <h4 className="text-yellow-400 mt-4 mb-2 font-semibold">🏆 Winners</h4>
+                    <table className="w-full text-left text-gray-300 border border-gray-800 rounded mb-3 text-sm">
+                      <thead className="bg-gray-800 text-yellow-400">
+                        <tr>
+                          <th className="p-2">Rank</th>
+                          <th className="p-2">Team</th>
+                          <th className="p-2">Kills</th>
+                          <th className="p-2">Prize</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {viewData.results.winners.map((w, i) => (
+                          <tr key={i} className="border-b border-gray-800">
+                            <td className="p-2 text-gray-400">#{i + 1}</td>
+                            <td className="p-2">{w.team}</td>
+                            <td className="p-2">{w.kills}</td>
+                            <td className="p-2 text-yellow-400 font-semibold">₹{w.prize}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </>
+                )}
 
-            {viewData.highestKill?.team && (
-              <p className="text-gray-300 mb-2 text-sm">
-                💀 Highest Kill:{" "}
-                <span className="text-yellow-400 font-semibold">
-                  {viewData.highestKill.team}
-                </span>{" "}
-                (₹{viewData.highestKill.prize}) — Leader:{" "}
-                <span className="text-gray-400">
-                  {viewData.highestKill.leaderPhone} (
-                  {viewData.highestKill.leaderId})
-                </span>
-              </p>
+                {viewData.results?.highestKill?.team && (
+                  <p className="text-gray-300 mt-3 text-sm">
+                    💀 Highest Kill:{" "}
+                    <span className="text-yellow-400 font-semibold">
+                      {viewData.results.highestKill.team}
+                    </span>{" "}
+                    (₹{viewData.results.highestKill.prize})
+                  </p>
+                )}
+
+                {viewData.results?.remarks && (
+                  <p className="text-gray-300 mt-3 text-sm">
+                    📝 Remarks: {viewData.results.remarks}
+                  </p>
+                )}
+
+                <button
+                  onClick={() => setViewData(null)}
+                  className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded mt-4 text-sm"
+                >
+                  Close
+                </button>
+              </>
             )}
-
-            <p className="text-gray-300 mt-3 text-sm">
-              📝 Remarks: {viewData.remarks || "—"}
-            </p>
-
-            <button
-              onClick={() => setViewData(null)}
-              className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded mt-4 text-sm"
-            >
-              Close
-            </button>
           </div>
         </div>
       )}

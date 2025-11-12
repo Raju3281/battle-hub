@@ -1,140 +1,186 @@
-import React, { useState } from "react";
-import EncryptedStorage from "../../utils/encryptedStorage";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ApprovePayments() {
-  // 🧾 Dummy data — simulating real user payment uploads
-  const [payments, setPayments] = useState([
-    {
-      id: 1,
-      username: "Raju",
-      userId: "u001",
-      amount: 150,
-      upi: "raju@upi",
-      screenshot:
-        "https://i.ibb.co/ZKysHDk/phonepe-payment-receipt.jpg", // ✅ PhonePe-style screenshot
-      approved: false,
-    },
-    {
-      id: 2,
-      username: "John",
-      userId: "u002",
-      amount: 100,
-      upi: "john@upi",
-      screenshot:
-        "https://i.ibb.co/ypgf4QF/gpay-transaction-receipt.jpg", // ✅ GPay-style screenshot
-      approved: false,
-    },
-    {
-      id: 3,
-      username: "Arjun",
-      userId: "u003",
-      amount: 200,
-      upi: "arjun@upi",
-      screenshot:
-        "https://i.ibb.co/X2RXgcx/paytm-transaction-receipt.jpg", // ✅ Paytm-style screenshot
-      approved: false,
-    },
-    {
-      id: 4,
-      username: "Ravi",
-      userId: "u004",
-      amount: 300,
-      upi: "ravi@upi",
-      screenshot:
-        "https://i.ibb.co/QvLQ7VZ/googlepay-payment-receipt.jpg", // ✅ GPay mock
-      approved: false,
-    },
-  ]);
-
+  const [payments, setPayments] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [rejectModal, setRejectModal] = useState({ open: false, id: null });
+  const [rejectReason, setRejectReason] = useState("");
 
-  // 💰 Approve function
-  const handleApprove = (paymentId, userId, amount) => {
-    const key = `user_wallet_${userId}`;
-    const currentBalance = EncryptedStorage.get(key) || 0;
-    const updatedBalance = currentBalance + amount;
+  // ✅ Fetch pending payments
+  const fetchPayments = async () => {
+    try {
+      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
+      const { data } = await axios.get(
+        "https://battle-hub-server.vercel.app/api/payments/pending",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPayments(data.payments || []);
+    } catch (err) {
+      toast.error("Failed to load payments");
+    }
+  };
 
-    // Update encrypted storage (simulating backend balance update)
-    EncryptedStorage.set(key, updatedBalance);
+  useEffect(() => {
+    fetchPayments();
+  }, []);
 
-    // Update UI
-    setPayments((prev) =>
-      prev.map((p) =>
-        p.id === paymentId ? { ...p, approved: true } : p
-      )
-    );
+  // 💰 Approve
+  const handleApprove = async (paymentId) => {
+    try {
+      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
+      const { data } = await axios.put(
+        `https://battle-hub-server.vercel.app/api/payments/approve/${paymentId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(data.message);
+      fetchPayments();
+    } catch (err) {
+      toast.error("Error approving payment");
+    }
+  };
 
-    alert(
-      `✅ Approved ₹${amount} for ${userId}\n💰 New Balance: ₹${updatedBalance}`
-    );
+  // ❌ Reject with reason
+  const handleReject = async () => {
+    try {
+      if (!rejectReason.trim()) return toast.error("Enter rejection reason!");
+      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
+      const { data } = await axios.put(
+        `https://battle-hub-server.vercel.app/api/payments/reject/${rejectModal.id}`,
+        { reason: rejectReason },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.warning(data.message);
+      setRejectModal({ open: false, id: null });
+      setRejectReason("");
+      fetchPayments();
+    } catch (err) {
+      toast.error("Error rejecting payment");
+    }
   };
 
   return (
-    <div>
+    <div className="text-white p-4 sm:p-6 bg-gradient-to-br from-gray-950 via-gray-900 to-black min-h-screen">
+      <ToastContainer theme="dark" position="top-right" />
       <h2 className="text-2xl font-bold text-yellow-400 mb-6">
-        Approve User Payments 💳
+        Approve / Reject Payments 💳
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {payments.map((p) => (
-          <div
-            key={p.id}
-            className={`rounded-lg border border-gray-800 bg-gray-900 p-4 shadow-md transition transform hover:scale-[1.01] ${
-              p.approved ? "opacity-60" : ""
-            }`}
-          >
-            {/* Header */}
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-bold text-yellow-400">{p.username}</h3>
-              <span
-                className={`text-xs px-2 py-1 rounded ${
-                  p.approved ? "bg-green-600" : "bg-yellow-600"
-                }`}
-              >
-                {p.approved ? "Approved" : "Pending"}
-              </span>
-            </div>
-
-            {/* Details */}
-            <p className="text-gray-400 text-sm mb-1">User ID: {p.userId}</p>
-            <p className="text-gray-400 text-sm mb-1">
-              Amount: <span className="text-yellow-400">₹{p.amount}</span>
-            </p>
-            <p className="text-gray-400 text-sm mb-3">UPI: {p.upi}</p>
-
-            {/* Screenshot Preview */}
-            <div className="mb-3">
-              <img
-                src={p.screenshot}
-                alt={`${p.username}'s payment`}
-                className="rounded border border-gray-700 cursor-pointer hover:opacity-80 h-48 w-full object-cover"
-                onClick={() => setSelectedImage(p.screenshot)}
-              />
-            </div>
-
-            {/* Action Buttons */}
-            {!p.approved && (
-              <div className="flex justify-between">
-                <button
-                  onClick={() => setSelectedImage(p.screenshot)}
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
+      {payments.length === 0 ? (
+        <p className="text-gray-400 text-center">No pending payments.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {payments.map((p) => (
+            <div
+              key={p._id}
+              className={`rounded-lg border border-gray-800 bg-gray-900 p-4 shadow-md ${
+                p.status !== "pending" ? "opacity-60" : ""
+              }`}
+            >
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-bold text-yellow-400">
+                  {p.user?.username}
+                </h3>
+                <span
+                  className={`text-xs px-2 py-1 rounded ${
+                    p.status === "approved"
+                      ? "bg-green-600"
+                      : p.status === "rejected"
+                      ? "bg-red-600"
+                      : "bg-yellow-600"
+                  }`}
                 >
-                  View
-                </button>
-
-                <button
-                  onClick={() => handleApprove(p.id, p.userId, p.amount)}
-                  className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded"
-                >
-                  Approve
-                </button>
+                  {p.status}
+                </span>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
 
-      {/* Fullscreen Screenshot Modal */}
+              <p className="text-gray-400 text-sm mb-1">User ID: {p.user?._id}</p>
+              <p className="text-gray-400 text-sm mb-1">
+                Amount: <span className="text-yellow-400">₹{p.amount}</span>
+              </p>
+              <p className="text-gray-400 text-sm mb-3">UPI: {p.upi}</p>
+
+              {p.screenshot && (
+                <img
+                  src={p.screenshot}
+                  alt="screenshot"
+                  className="rounded border border-gray-700 cursor-pointer h-48 w-full object-cover mb-3"
+                  onClick={() => setSelectedImage(p.screenshot)}
+                />
+              )}
+
+              {p.status === "pending" && (
+                <div className="flex justify-between">
+                  <button
+                    onClick={() => setSelectedImage(p.screenshot)}
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
+                  >
+                    View
+                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleApprove(p._id)}
+                      className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() =>
+                        setRejectModal({ open: true, id: p._id })
+                      }
+                      className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {rejectModal.open && (
+        <div
+          className="fixed inset-0 bg-black/70 flex justify-center items-center z-50"
+          onClick={() => setRejectModal({ open: false, id: null })}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-gray-900 border border-red-500 rounded-lg p-6 w-[90%] max-w-md"
+          >
+            <h3 className="text-lg font-bold text-red-400 mb-3">
+              ❌ Reject Payment
+            </h3>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Enter reason for rejection..."
+              className="bg-gray-800 text-white w-full p-3 rounded border border-gray-700 h-24"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setRejectModal({ open: false, id: null })}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReject}
+                className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Modal */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"

@@ -11,7 +11,7 @@ export default function AdminLayout() {
     { name: "Approve payment", path: "approve-payment" },
     { name: "Create Match", path: "create-match" },
     { name: "Update results", path: "update-results" },
-    { name: "Prize Distribution", path: "prize" },
+    // { name: "Prize Distribution", path: "prize" },
     { name: "Registered Users", path: "registered-users" },
     // { name: "Schedule", path: "schedule" },
   ];

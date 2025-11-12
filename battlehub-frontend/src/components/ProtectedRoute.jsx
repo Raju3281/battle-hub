@@ -3,22 +3,22 @@ import { Auth } from "../utils/auth";
 
 export default function ProtectedRoute({ children, allowed }) {
   const user = Auth.getUser();
-
-  // If user not logged in → send to login
+  console.log("ProtectedRoute - current user:", user);
+  // 🧩 If user not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // If this route is for admin only
-  if (allowed === "admin" && user.userId !== "admin") {
+  // 🧩 If route is admin-only, but user is not admin
+  if (allowed === "admin" && user !== "admin") {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // If this route is for user only but user is admin
-  if (allowed === "user" && user.userId === "admin") {
-    return <Navigate to="/dashboard/admin" replace />;
+  // 🧩 If route is user-only, but user is admin
+  if (allowed === "user" && user === "admin") {
+    return <Navigate to="/admin" replace />;
   }
 
-  // All good → render route
+  // ✅ All good — render children
   return children;
 }

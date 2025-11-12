@@ -1,51 +1,76 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Auth } from "../../utils/auth"; // 👈 import helper
+import axios from "axios";
+import { Auth } from "../../utils/auth"; // your helper for token management
+import api from "../../utils/api";
+import { LOGIN_URL } from "../../utils/apiConstants";
 
 export default function Login() {
   const [formData, setFormData] = useState({
-    username: "",
+    usernameOrPhone: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   // 🧠 Auto redirect if already logged in
   useEffect(() => {
     const user = Auth.getUser();
     if (user) {
-      if (user.userId === "admin") navigate("/dashboard/admin", { replace: true });
+      if (user.role === "admin") navigate("/admin", { replace: true });
       else navigate("/dashboard", { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { username, password } = formData;
+    const { usernameOrPhone, password } = formData;
 
-    if (!username || !password) {
-      alert("Please enter both username and password!");
+    if (!usernameOrPhone || !password) {
+      alert("⚠️ Please enter both username and password!");
       return;
     }
 
-    // 🧠 Simulate login (you can later replace this with API call)
-    console.log("User Logged In:", username);
-    alert("✅ Login Successful!");
+    try {
+      setLoading(true);
 
-    // Save user in localStorage
-    Auth.login({ userId: username });
+      // 🧩 API request
+      const res = await api.post(LOGIN_URL, {
+        usernameOrPhone,
+        password,
+      });
 
-    // Redirect based on role
-    if (username.toLowerCase() === "admin") {
-      navigate("/admin", { replace: true });
-    } else {
-      navigate("/dashboard", { replace: true });
+      const { token, user } = res.data;
+
+      // 🧠 Store token + user info securely
+      Auth.login({
+        token,
+        userId: user._id,
+        username: user.username,
+        role: user.role,
+      });
+
+      alert("✅ Login Successful!");
+
+      // 🎯 Redirect based on role
+      console.log("Logged in user:", user);
+      if (user.role === "admin") navigate("/admin", { replace: true });
+      else navigate("/dashboard", { replace: true });
+    } catch (error) {
+      console.error(error);
+      alert(
+        error.response?.data?.message || "❌ Invalid credentials. Try again!"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -73,9 +98,9 @@ export default function Login() {
             <label className="block text-sm font-medium mb-1">User ID</label>
             <input
               type="text"
-              name="username"
+              name="usernameOrPhone"
               required
-              value={formData.username}
+              value={formData.usernameOrPhone}
               onChange={handleChange}
               className="w-full p-2.5 sm:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-500 text-sm sm:text-base"
               placeholder="Enter your username"
@@ -124,16 +149,20 @@ export default function Login() {
           {/* Login Button */}
           <button
             type="submit"
-            className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 sm:py-2.5 rounded-lg mt-4 text-sm sm:text-base transition-all duration-200"
+            disabled={loading}
+            className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-semibold py-2 sm:py-2.5 rounded-lg mt-4 text-sm sm:text-base transition-all duration-200 disabled:opacity-50"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         {/* No account */}
         <p className="text-center text-sm text-gray-400 mt-5">
           Don’t have an account?{" "}
-          <a href="/register" className="text-yellow-400 hover:underline font-medium">
+          <a
+            href="/"
+            className="text-yellow-400 hover:underline font-medium"
+          >
             Sign Up
           </a>
         </p>
