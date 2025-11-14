@@ -13,7 +13,8 @@ export default function AdminLayout() {
     { name: "Update results", path: "update-results" },
     // { name: "Prize Distribution", path: "prize" },
     { name: "Registered Users", path: "registered-users" },
-    // { name: "Schedule", path: "schedule" },
+    { name: "ID & Password", path: "id-pass" },
+    { name: "Update live links", path: "live-links" },
   ];
 
   return (

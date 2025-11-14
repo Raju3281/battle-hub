@@ -16,7 +16,6 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  // 🧠 Auto redirect if already logged in
   useEffect(() => {
     const user = Auth.getUser();
     if (user) {
@@ -42,7 +41,6 @@ export default function Login() {
     try {
       setLoading(true);
 
-      // 🧩 API request
       const res = await api.post(LOGIN_URL, {
         usernameOrPhone,
         password,
@@ -50,7 +48,6 @@ export default function Login() {
 
       const { token, user } = res.data;
 
-      // 🧠 Store token + user info securely
       Auth.login({
         token,
         userId: user._id,
@@ -60,7 +57,6 @@ export default function Login() {
 
       alert("✅ Login Successful!");
 
-      // 🎯 Redirect based on role
       console.log("Logged in user:", user);
       if (user.role === "admin") navigate("/admin", { replace: true });
       else navigate("/dashboard", { replace: true });

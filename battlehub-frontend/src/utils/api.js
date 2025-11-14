@@ -1,8 +1,10 @@
 // ✅ src/utils/api.js
 import axios from "axios";
+import EncryptedStorage from "./encryptedStorage";
 
 // 🔹 Backend Base URL
 const BASE_URL = "https://battle-hub-server.vercel.app/api"; // change when deployed
+// const BASE_URL = "http://localhost:5000/api"; // for local development
 
 // 🔹 Create a single axios instance
 const api = axios.create({
@@ -15,7 +17,7 @@ const api = axios.create({
 // 🔹 Automatically attach JWT token if available
 api.interceptors.request.use(
   (config) => {
-    const storedUser = localStorage.getItem("battlehub_user");
+    const storedUser = EncryptedStorage.get("battlehub_user");
     if (storedUser) {
       const token = JSON.parse(storedUser)?.token;
       if (token) {

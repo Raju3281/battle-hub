@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import EncryptedStorage from "../../utils/encryptedStorage";
+import api from "../../utils/api";
 
 export default function AllUsers() {
   const [users, setUsers] = useState([]);
@@ -14,13 +16,13 @@ export default function AllUsers() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
+      const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
       if (!token) {
         toast.error("⚠️ Please login as admin!");
         return;
       }
 
-      const { data } = await axios.get("https://battle-hub-server.vercel.app/api/users", {
+      const { data } = await api.get("/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -49,9 +51,9 @@ export default function AllUsers() {
   // 🚫 Block user
   const blockUser = async (id) => {
     try {
-      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
-      await axios.put(
-        `https://battle-hub-server.vercel.app/api/users/${id}/block`,
+      const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
+      await api.put(
+        `/users/${id}/block`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -66,9 +68,9 @@ export default function AllUsers() {
   // ✅ Unblock user
   const unblockUser = async (id) => {
     try {
-      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
-      await axios.put(
-        `https://battle-hub-server.vercel.app/api/users/${id}/unblock`,
+      const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
+      await api.put(
+        `/users/${id}/unblock`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -83,9 +85,9 @@ export default function AllUsers() {
   // 💰 Fetch wallet details
   const fetchWalletDetails = async (id) => {
     try {
-      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
-      const { data } = await axios.get(
-        `https://battle-hub-server.vercel.app/api/users/wallet/${id}`,
+      const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
+      const { data } = await api.get(
+        `/users/wallet/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setWalletData(data);

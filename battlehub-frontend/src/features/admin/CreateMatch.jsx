@@ -6,7 +6,7 @@ export default function CreateMatch() {
   const [matchName, setMatchName] = useState("");
   const [entryFee, setEntryFee] = useState("");
   const [totalPrizePool, setTotalPrizePool] = useState("");
-  const [matchType, setMatchType] = useState("solo");
+  const [matchType, setMatchType] = useState("squad");
   const [matchTime, setMatchTime] = useState("");
 
   // 🔹 Prize Distribution
@@ -165,8 +165,8 @@ export default function CreateMatch() {
             onChange={(e) => setMatchType(e.target.value)}
             className="bg-gray-800 text-white p-3 rounded border border-gray-700"
           >
-            <option value="solo">Solo</option>
-            <option value="duo">Duo</option>
+            {/* <option value="solo">Solo</option>
+            <option value="duo">Duo</option> */}
             <option value="squad">Squad</option>
           </select>
         </div>

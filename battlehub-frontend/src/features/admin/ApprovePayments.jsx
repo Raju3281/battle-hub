@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import api from "../../utils/api";
 
 export default function ApprovePayments() {
   const [payments, setPayments] = useState([]);
@@ -12,9 +13,9 @@ export default function ApprovePayments() {
   // ✅ Fetch pending payments
   const fetchPayments = async () => {
     try {
-      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
-      const { data } = await axios.get(
-        "https://battle-hub-server.vercel.app/api/payments/pending",
+      const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
+      const { data } = await api.get(
+        "/payments/pending",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPayments(data.payments || []);
@@ -30,9 +31,9 @@ export default function ApprovePayments() {
   // 💰 Approve
   const handleApprove = async (paymentId) => {
     try {
-      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
-      const { data } = await axios.put(
-        `https://battle-hub-server.vercel.app/api/payments/approve/${paymentId}`,
+      const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
+      const { data } = await api.put(
+        `/payments/approve/${paymentId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -47,9 +48,9 @@ export default function ApprovePayments() {
   const handleReject = async () => {
     try {
       if (!rejectReason.trim()) return toast.error("Enter rejection reason!");
-      const token = JSON.parse(localStorage.getItem("battlehub_user"))?.token;
-      const { data } = await axios.put(
-        `https://battle-hub-server.vercel.app/api/payments/reject/${rejectModal.id}`,
+      const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
+      const { data } = await api.put(
+        `/payments/reject/${rejectModal.id}`,
         { reason: rejectReason },
         { headers: { Authorization: `Bearer ${token}` } }
       );
