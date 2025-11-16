@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../../utils/api";
 import EncryptedStorage from "../../../utils/encryptedStorage";
@@ -67,6 +67,13 @@ export default function JoinSquad() {
       }
     }
   };
+  const [matchFee,setMatchFee]=useState(0);
+useEffect(() => {
+   api
+      .get(`matches/matchFee/${matchId}`)
+      .then((res) => setMatchFee(res.data.entryFee))
+      .catch((err) => console.error("Fetch Error:", err));
+}, []);
 
   return (
     <div className="w-full flex justify-center">
@@ -130,7 +137,9 @@ export default function JoinSquad() {
               </div>
             ))}
           </div>
-
+<h2 className="text-xl font-bold text-yellow-400 text-center mb-6">
+          Entry Fee: Rs.{matchFee} 
+        </h2>
           <button
             type="submit"
             className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg w-full"

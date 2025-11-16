@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import EncryptedStorage from "../../utils/encryptedStorage";
 import { Auth } from "../../utils/auth";
+import api from "../../utils/api";
 
 export default function DashboardLayout() {
   const [isOpen, setIsOpen] = useState(true);
@@ -13,9 +14,19 @@ const navigate = useNavigate();
     { name: "Recharge", path: "recharge" },
     { name: "Watch on Youtube", path: "watch" },
   ];
+ const [userBalance, setUserBalance] = useState(0);
+  const getUserBalnce =async (id) => {
+          const res = await api.get(`/payments/balance/${id}`);
+          console.log("Balance fetch",res.data.balance);
+          EncryptedStorage.set("user_balance",res.data.balance);
+          setUserBalance(res.data.balance);
+  }
   useEffect(() => {
-    EncryptedStorage.set("user_balance", 0);
-
+    const id=(JSON.parse(EncryptedStorage.get("battlehub_user"))).userId
+    getUserBalnce(id)
+     setInterval(() => {
+      getUserBalnce(id)
+     },10000)
 
   }, []);
 
@@ -109,7 +120,7 @@ const navigate = useNavigate();
       className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-lg border border-gray-700 cursor-pointer hover:bg-gray-700 transition"
     >
       <span className="text-yellow-400 text-lg">💰</span>
-      <span className="font-semibold text-yellow-400">{EncryptedStorage.get("user_balance")}</span>
+      <span className="font-semibold text-yellow-400">{userBalance}</span>
     </div>
 
     {/* Profile */}

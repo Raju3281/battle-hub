@@ -3,6 +3,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import api from "../../utils/api";
+import EncryptedStorage from "../../utils/encryptedStorage";
 
 export default function ApprovePayments() {
   const [payments, setPayments] = useState([]);
@@ -10,6 +11,17 @@ export default function ApprovePayments() {
   const [rejectModal, setRejectModal] = useState({ open: false, id: null });
   const [rejectReason, setRejectReason] = useState("");
 
+
+  const getImageUrl = (screenshot) => {
+    if (!screenshot?.data) return "";
+
+    const base64String = btoa(
+      new Uint8Array(screenshot.data.data)
+        .reduce((data, byte) => data + String.fromCharCode(byte), "")
+    );
+
+    return `data:${screenshot.contentType};base64,${base64String}`;
+  };
   // ✅ Fetch pending payments
   const fetchPayments = async () => {
     try {
@@ -18,7 +30,7 @@ export default function ApprovePayments() {
         "/payments/pending",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPayments(data.payments || []);
+      setPayments(data || []);
     } catch (err) {
       toast.error("Failed to load payments");
     }
@@ -28,33 +40,40 @@ export default function ApprovePayments() {
     fetchPayments();
   }, []);
 
-  // 💰 Approve
+  // 💰 Approve (single API)
   const handleApprove = async (paymentId) => {
     try {
       const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
+
       const { data } = await api.put(
-        `/payments/approve/${paymentId}`,
-        {},
+        `/wallet/update-status/${paymentId}`,
+        { status: "approved" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success(data.message);
+
+      toast.success(data.message || "Payment approved!");
       fetchPayments();
     } catch (err) {
       toast.error("Error approving payment");
     }
   };
 
-  // ❌ Reject with reason
+  // ❌ Reject (single API)
   const handleReject = async () => {
     try {
-      if (!rejectReason.trim()) return toast.error("Enter rejection reason!");
+      if (!rejectReason.trim())
+        return toast.error("Enter rejection reason!");
+
       const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
+
       const { data } = await api.put(
-        `/payments/reject/${rejectModal.id}`,
-        { reason: rejectReason },
+        `/wallet/update-status/${rejectModal.id}`,
+        { status: "rejected", reason: rejectReason },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.warning(data.message);
+
+      toast.warning(data.message || "Payment rejected!");
+
       setRejectModal({ open: false, id: null });
       setRejectReason("");
       fetchPayments();
@@ -62,6 +81,7 @@ export default function ApprovePayments() {
       toast.error("Error rejecting payment");
     }
   };
+
 
   return (
     <div className="text-white p-4 sm:p-6 bg-gradient-to-br from-gray-950 via-gray-900 to-black min-h-screen">
@@ -77,22 +97,20 @@ export default function ApprovePayments() {
           {payments.map((p) => (
             <div
               key={p._id}
-              className={`rounded-lg border border-gray-800 bg-gray-900 p-4 shadow-md ${
-                p.status !== "pending" ? "opacity-60" : ""
-              }`}
+              className={`rounded-lg border border-gray-800 bg-gray-900 p-4 shadow-md ${p.status !== "pending" ? "opacity-60" : ""
+                }`}
             >
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-bold text-yellow-400">
                   {p.user?.username}
                 </h3>
                 <span
-                  className={`text-xs px-2 py-1 rounded ${
-                    p.status === "approved"
-                      ? "bg-green-600"
-                      : p.status === "rejected"
+                  className={`text-xs px-2 py-1 rounded ${p.status === "approved"
+                    ? "bg-green-600"
+                    : p.status === "rejected"
                       ? "bg-red-600"
                       : "bg-yellow-600"
-                  }`}
+                    }`}
                 >
                   {p.status}
                 </span>
@@ -106,17 +124,17 @@ export default function ApprovePayments() {
 
               {p.screenshot && (
                 <img
-                  src={p.screenshot}
+                  src={getImageUrl(p.screenshot)}
                   alt="screenshot"
                   className="rounded border border-gray-700 cursor-pointer h-48 w-full object-cover mb-3"
-                  onClick={() => setSelectedImage(p.screenshot)}
+                  onClick={() => setSelectedImage(getImageUrl(p.screenshot))}
                 />
               )}
 
               {p.status === "pending" && (
                 <div className="flex justify-between">
                   <button
-                    onClick={() => setSelectedImage(p.screenshot)}
+                    onClick={() => setSelectedImage(getImageUrl(p.screenshot))}
                     className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
                   >
                     View
@@ -129,13 +147,12 @@ export default function ApprovePayments() {
                       Approve
                     </button>
                     <button
-                      onClick={() =>
-                        setRejectModal({ open: true, id: p._id })
-                      }
-                      className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded"
+                      onClick={handleReject}
+                      className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
                     >
                       Reject
                     </button>
+
                   </div>
                 </div>
               )}

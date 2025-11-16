@@ -1,191 +1,229 @@
 import { useState, useEffect } from "react";
+import api from "../../utils/api";
 import EncryptedStorage from "../../utils/encryptedStorage";
 
 export default function Recharge() {
   const [amount, setAmount] = useState("");
-  const [step, setStep] = useState("form"); // form | payment | processing | success
+  const [step, setStep] = useState("form");
   const [selectedMethod, setSelectedMethod] = useState("");
   const [uploadFile, setUploadFile] = useState(null);
-  const [wallet, setWallet] = useState(EncryptedStorage.get('user_balance')); // mock wallet amount
-  const [timer, setTimer] = useState(10); // mock processing time (seconds)
+  const [isUploading, setIsUploading] = useState(false);
+  const [wallet, setWallet] = useState(
+    parseInt(EncryptedStorage.get("user_balance") || 0)
+  );
+  const [timer, setTimer] = useState(100);
 
-  // simulate approval timer
+  // Timer for processing screen
   useEffect(() => {
     if (step === "processing" && timer > 0) {
-      const t = setTimeout(() => setTimer((p) => p - 1), 1000);
+      const t = setTimeout(() => setTimer((n) => n - 1), 1000);
       return () => clearTimeout(t);
-    } else if (timer === 0 && step === "processing") {
-      setStep("success");
-      setWallet((prev) => prev + parseInt(amount || 0));
-      EncryptedStorage.set("user_balance", wallet + parseInt(amount || 0));
     }
-  }, [timer, step, amount]);
+
+    if (timer === 0 && step === "processing") {
+      setStep("success");
+
+      const updated = wallet + parseInt(amount);
+      setWallet(updated);
+      EncryptedStorage.set("user_balance", updated);
+    }
+  }, [timer, step, amount, wallet]);
 
   const handleRechargeSubmit = (e) => {
     e.preventDefault();
-    if (!amount || parseInt(amount) <= 0) return alert("Enter a valid amount!");
+    if (!amount || parseInt(amount) <= 0) return alert("Enter valid amount!");
     setStep("payment");
   };
 
-  const handleUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setUploadFile(file);
-      setStep("processing");
+  // Upload screenshot + submit recharge info
+  const handleProofSubmit = async () => {
+    if (!uploadFile) return alert("Upload screenshot!");
+    const userId = JSON.parse(EncryptedStorage.get("battlehub_user")).userId;
+    try {
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+      formData.append("amount", amount);
+      formData.append("userId", userId); // or get from token backend
+      
+      const res = await api.post("/wallet/transaction",formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+       setStep("processing");
+      console.log("Transaction created:", res.data);
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Upload failed");
     }
   };
+   const getUserBalance =async (id) => {
+          const res = await api.get(`/payments/balance/${id}`);
+          console.log("Balance fetch",res.data.balance);
+          if(res.data.balance!==EncryptedStorage.get("user_balance")){
+            setStep("succes")
+          }
+          
+  }
+  useEffect(() => {
+   getUserBalance((JSON.parse(EncryptedStorage.get("battlehub_user"))).userId);
+  }, [timer]);
+   
+
 
   return (
-    <div className="max-w-2xl mx-auto bg-gray-900/80 border border-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg text-white">
+    <div className="max-w-2xl mx-auto bg-gray-900 border border-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg text-white">
+
       <h2 className="text-2xl font-bold text-yellow-400 text-center mb-6">
         Recharge Wallet 💰
       </h2>
 
-      {/* Step 1 - Enter amount */}
+      {/* Step 1 — Enter Amount */}
       {step === "form" && (
-        <form
-          onSubmit={handleRechargeSubmit}
-          className="flex flex-col gap-5 items-center"
-        >
-          <p className="text-gray-300 text-sm">
-            Current Wallet Balance:{" "}
-            <span className="text-yellow-400 font-semibold">₹{wallet}</span>
+        <form onSubmit={handleRechargeSubmit} className="flex flex-col items-center gap-5">
+          <p className="text-gray-300">
+            Wallet Balance: <span className="text-yellow-400 font-bold">₹{wallet}</span>
           </p>
+
           <input
             type="number"
             placeholder="Enter amount (₹)"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-64 p-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 text-center text-lg text-white"
+            className="w-64 p-3 bg-gray-800 border border-gray-700 rounded-lg text-center text-lg"
             required
           />
-          <button
-            type="submit"
-            className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg transition-all duration-200"
-          >
+
+          <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg">
             Proceed to Pay
           </button>
         </form>
       )}
 
-      {/* Step 2 - Payment options */}
+      {/* Step 2 — Payment Options */}
       {step === "payment" && (
         <div className="text-center flex flex-col items-center gap-5">
-          <h3 className="text-xl font-semibold text-yellow-400">
-            Select Payment Method
-          </h3>
+
+          <h3 className="text-xl font-semibold text-yellow-400">Select Payment Method</h3>
 
           <div className="flex gap-4">
             <button
               onClick={() => setSelectedMethod("upi")}
               className={`px-6 py-3 rounded-lg border ${
-                selectedMethod === "upi"
-                  ? "bg-yellow-500 text-black"
-                  : "bg-gray-800 border-gray-700 hover:bg-gray-700"
+                selectedMethod === "upi" ? "bg-yellow-500 text-black" : "bg-gray-800"
               }`}
             >
               UPI
             </button>
+
             <button
               onClick={() => setSelectedMethod("qr")}
               className={`px-6 py-3 rounded-lg border ${
-                selectedMethod === "qr"
-                  ? "bg-yellow-500 text-black"
-                  : "bg-gray-800 border-gray-700 hover:bg-gray-700"
+                selectedMethod === "qr" ? "bg-yellow-500 text-black" : "bg-gray-800"
               }`}
             >
               QR Code
             </button>
           </div>
 
-          {/* Show UPI / QR section */}
+          {/* UPI SECTION */}
           {selectedMethod === "upi" && (
-            <div className="mt-6 text-center">
-              <p className="text-gray-300">Pay using UPI ID below 👇</p>
-              <div className="flex justify-center items-center gap-3 mt-3">
-                <span className="bg-gray-800 px-4 py-2 rounded-lg border border-gray-700 text-yellow-400 font-semibold">
+            <div>
+              <p className="text-gray-300 mt-4">Pay using UPI ID</p>
+
+              <div className="flex items-center justify-center gap-3 mt-2">
+                <span className="bg-gray-800 px-4 py-2 border border-gray-700 rounded-lg text-yellow-400">
                   battlehub@upi
                 </span>
                 <button
-                  onClick={() =>
-                    navigator.clipboard.writeText("battlehub@upi")
-                  }
-                  className="text-sm bg-yellow-500 hover:bg-yellow-400 text-black font-medium px-3 py-1 rounded-lg"
+                  onClick={() => navigator.clipboard.writeText("battlehub@upi")}
+                  className="bg-yellow-500 text-black px-3 py-1 rounded-lg"
                 >
                   Copy
                 </button>
               </div>
 
-              <p className="text-sm text-gray-400 mt-4">
-                After payment, upload screenshot below 👇
-              </p>
+              <p className="text-sm text-gray-400 mt-4">Upload Screenshot</p>
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleUpload}
-                className="mt-3 text-gray-300"
+                onChange={(e) => setUploadFile(e.target.files[0])}
+                className="mt-3"
               />
+
+              <button
+                disabled={!uploadFile || isUploading}
+                onClick={handleProofSubmit}
+                className={`mt-5 px-6 py-3 rounded-lg font-semibold ${
+                  uploadFile ? "bg-yellow-500" : "bg-gray-700 cursor-not-allowed"
+                }`}
+              >
+                {isUploading ? "Uploading..." : "Submit Payment Proof"}
+              </button>
             </div>
           )}
 
+          {/* QR SECTION */}
           {selectedMethod === "qr" && (
-            <div className="mt-6 text-center">
-              <p className="text-gray-300">Scan QR code below 👇</p>
+            <div>
+              <p className="text-gray-300 mt-4">Scan QR to Pay</p>
+
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?data=battlehub@upi&size=180x180"
+                src="https://api.qrserver.com/v1/create-qr-code/?data=battlehub@upi&size=200x200"
+                className="mx-auto border border-gray-700 rounded-xl my-4"
                 alt="QR Code"
-                className="mx-auto my-4 border border-gray-700 rounded-xl"
               />
-              <p className="text-sm text-gray-400">
-                After payment, upload screenshot below 👇
-              </p>
+
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleUpload}
-                className="mt-3 text-gray-300"
+                onChange={(e) => setUploadFile(e.target.files[0])}
+                className="mt-3"
               />
+
+              <button
+                disabled={!uploadFile || isUploading}
+                onClick={handleProofSubmit}
+                className={`mt-5 px-6 py-3 rounded-lg ${
+                  uploadFile ? "bg-yellow-500" : "bg-gray-600 cursor-not-allowed"
+                }`}
+              >
+                {isUploading ? "Uploading..." : "Submit Payment Proof"}
+              </button>
             </div>
           )}
         </div>
       )}
 
-      {/* Step 3 - Processing */}
+      {/* Step 3 — Processing */}
       {step === "processing" && (
-        <div className="text-center mt-8">
-          <div className="animate-spin border-4 border-yellow-400 border-t-transparent rounded-full w-14 h-14 mx-auto mb-4"></div>
-          <p className="text-gray-300">Payment under review...</p>
-          <p className="text-yellow-400 font-semibold mt-2">
-            Approving in {timer}s
-          </p>
+        <div className="text-center mt-10">
+          <div className="animate-spin w-14 h-14 border-4 border-yellow-400 border-t-transparent rounded-full mx-auto"></div>
+          <p className="text-gray-300 mt-4">Payment under review…</p>
+          <p className="text-yellow-400 mt-2 font-semibold">{timer}s remaining</p>
+
+          <p className="text-yellow-400 mt-2 text-sm">It may take 2-3 minutes , you can ga back</p>
+
         </div>
       )}
 
-      {/* Step 4 - Success */}
+      {/* Step 4 — Success */}
       {step === "success" && (
         <div className="text-center mt-8">
-          <div className="w-16 h-16 mx-auto mb-4 bg-green-500 text-white flex items-center justify-center rounded-full text-3xl">
+          <div className="w-16 h-16 flex items-center justify-center mx-auto bg-green-500 text-white text-3xl rounded-full">
             ✓
           </div>
-          <h3 className="text-xl font-bold text-green-400">
-            Recharge Successful!
-          </h3>
-          <p className="text-gray-300 mt-2">
-            ₹{amount} added to your wallet 🎉
-          </p>
-          <p className="text-yellow-400 mt-4 font-semibold">
-            New Wallet Balance: ₹{wallet}
-          </p>
+
+          <h3 className="text-xl text-green-400 font-bold mt-3">Recharge Successful!</h3>
+          <p className="text-gray-300 mt-2">₹{amount} added to your wallet 🎉</p>
 
           <button
             onClick={() => {
               setStep("form");
               setAmount("");
-              setTimer(5);
               setSelectedMethod("");
               setUploadFile(null);
+              setTimer(10);
             }}
-            className="mt-6 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg transition-all duration-200"
+            className="mt-6 bg-yellow-500 text-black px-6 py-3 rounded-lg"
           >
             Done
           </button>
