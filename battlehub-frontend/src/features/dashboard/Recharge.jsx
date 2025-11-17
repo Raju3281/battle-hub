@@ -39,7 +39,7 @@ export default function Recharge() {
   const handleProofSubmit = async () => {
     if (!uploadFile) return alert("Upload screenshot!");
     const userId = JSON.parse(EncryptedStorage.get("battlehub_user")).userId;
-     setIsUploading(true);  // ⬅️ START LOADING
+    setIsUploading(true);  // ⬅️ START LOADING
     try {
       const formData = new FormData();
       formData.append("file", uploadFile);
@@ -50,11 +50,11 @@ export default function Recharge() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setStep("processing");
-       setIsUploading(true);  // ⬅️ START LOADING
+      setIsUploading(true);  // ⬅️ START LOADING
       console.log("Transaction created:", res.data);
     } catch (err) {
       console.error("Error:", err);
-       setIsUploading(false);  // ⬅️ START LOADING
+      setIsUploading(false);  // ⬅️ START LOADING
       alert("Upload failed");
     }
   };
@@ -146,8 +146,10 @@ export default function Recharge() {
               <input
                 type="file"
                 accept="image/*"
+                capture="environment"   // 👈 FIX for mobile camera/gallery
                 onChange={(e) => setUploadFile(e.target.files[0])}
-                className="mt-3"
+                className="mt-2 block text-white"
+                style={{ display: "block" }}
               />
 
               <button
