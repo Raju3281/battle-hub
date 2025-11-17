@@ -56,6 +56,7 @@ export default function DashboardLayout() {
           <nav className="flex flex-col gap-2">
             {menuItems.map((item) => (
               <NavLink
+              onClick={() => setIsOpen(false)} 
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
