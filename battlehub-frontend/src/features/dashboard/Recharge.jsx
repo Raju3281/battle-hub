@@ -131,7 +131,7 @@ export default function Recharge() {
 
               <div className="flex items-center justify-center gap-3 mt-2">
                 <span className="bg-gray-800 px-4 py-2 border border-gray-700 rounded-lg text-yellow-400">
-                  battlehub@upi
+                  9515227207-2@ybl
                 </span>
                 <button
                   onClick={() => navigator.clipboard.writeText("battlehub@upi")}
@@ -167,9 +167,11 @@ export default function Recharge() {
               <p className="text-gray-300 mt-4">Scan QR to Pay</p>
 
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?data=battlehub@upi&size=200x200"
+                src={"/QR.jpg"}
                 className="mx-auto border border-gray-700 rounded-xl my-4"
                 alt="QR Code"
+                width={250}
+                height={250}
               />
 
               <input
