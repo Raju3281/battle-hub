@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EncryptedStorage from "../../utils/encryptedStorage";
 import api from "../../utils/api";
@@ -10,19 +10,32 @@ export default function Wallet() {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [transactions, setTransactions] = useState([]); // 🆕 History list
 
   const user = JSON.parse(EncryptedStorage.get("battlehub_user"));
   const userId = user?.userId;
   const token = user?.token;
 
-  // ✅ Fetch Balance from backend
+  // 🟡 Convert base64 from Mongo to image URL
+  const getImageUrl = (screenshot) => {
+    if (!screenshot?.data) return "";
+    const base64String = btoa(
+      new Uint8Array(screenshot.data.data).reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        ""
+      )
+    );
+    return `data:${screenshot.contentType};base64,${base64String}`;
+  };
+
+  // ✅ Fetch Wallet Balance
   const fetchBalance = async () => {
     try {
       const res = await api.get(`/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setBalance(res.data.user.walletBalance||0);
+      setBalance(res.data.user.walletBalance || 0);
       EncryptedStorage.set("user_balance", res.data.user.walletBalance);
       setUpiId(res.data.user.upi || "");
     } catch (err) {
@@ -30,21 +43,33 @@ export default function Wallet() {
     }
   };
 
+  // 🆕 Fetch Transaction History
+  const fetchHistory = async () => {
+    try {
+      const res = await api.get(`/wallet/history/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTransactions(res.data.transactions || []);
+    } catch (err) {
+      console.error("History Fetch Error:", err);
+    }
+  };
+
   useEffect(() => {
     fetchBalance();
+    fetchHistory(); // 🆕 Load history too
   }, []);
 
-  // ✅ Save or update UPI ID (API)
+  // Save UPI
   const handleUpiSave = async (e) => {
     e.preventDefault();
-   const userId= JSON.parse(EncryptedStorage.get("battlehub_user")).userId;
     if (!upiId.trim()) return alert("Please enter a valid UPI ID!");
 
     try {
       setLoading(true);
-      const res = await api.put(
+      await api.put(
         `/users/${userId}/updateUser`,
-        {upiId },
+        { upiId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -57,7 +82,7 @@ export default function Wallet() {
     }
   };
 
-  // ✅ Withdraw request (API)
+  // Withdraw Money
   const handleWithdraw = async (e) => {
     e.preventDefault();
 
@@ -70,7 +95,7 @@ export default function Wallet() {
     try {
       setWithdrawLoading(true);
 
-      const res = await api.post(
+      await api.post(
         `/wallet/withdraw`,
         {
           userId,
@@ -83,7 +108,8 @@ export default function Wallet() {
       alert(`Withdraw request of ₹${withdrawAmount} submitted!`);
       setWithdrawAmount("");
 
-      fetchBalance(); // refresh balance
+      fetchBalance();
+      fetchHistory(); // refresh history
     } catch (err) {
       console.error(err);
       alert("Failed to submit withdrawal request.");
@@ -98,7 +124,7 @@ export default function Wallet() {
         My Wallet 💰
       </h2>
 
-      {/* Wallet Balance */}
+      {/* BALANCE */}
       <div className="bg-gradient-to-r from-yellow-500 to-yellow-400 text-black rounded-2xl p-5 mb-8 flex justify-between items-center shadow-lg">
         <div>
           <p className="text-sm opacity-80">Available Balance</p>
@@ -112,7 +138,7 @@ export default function Wallet() {
         </button>
       </div>
 
-      {/* UPI Section */}
+      {/* UPI SECTION */}
       <form
         onSubmit={handleUpiSave}
         className="bg-gray-800 p-5 rounded-xl mb-6 border border-gray-700"
@@ -143,7 +169,7 @@ export default function Wallet() {
         </div>
       </form>
 
-      {/* Withdraw */}
+      {/* WITHDRAW SECTION */}
       <form
         onSubmit={handleWithdraw}
         className="bg-gray-800 p-5 rounded-xl border border-gray-700"
@@ -174,13 +200,73 @@ export default function Wallet() {
         </div>
 
         <p className="text-gray-400 text-sm mt-2">
-          Withdrawals will be processed within 24 hours after approval.
+          Withdrawals will be processed within 24 hours.
         </p>
       </form>
 
-      {/* Transaction History Placeholder */}
-      <div className="mt-8 bg-gray-800 p-5 rounded-xl border border-gray-700 text-center text-gray-400 text-sm">
-        🕒 Transaction history will appear here once integrated with backend.
+      {/* =============================== */}
+      {/* 🟦 TRANSACTION HISTORY SECTION */}
+      {/* =============================== */}
+      <div className="mt-10">
+        <h3 className="text-xl font-bold text-yellow-400 mb-4">
+          Transaction History 🕒
+        </h3>
+
+        {transactions.length === 0 ? (
+          <p className="text-gray-400 text-center">No transactions yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {transactions.map((t) => (
+              <div
+                key={t._id}
+                className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex justify-between items-center"
+              >
+                <div>
+                  <p className="font-semibold">
+                    {t.type === "credit" ? "Credited" : "Debited"}:{" "}
+                    <span
+                      className={
+                        t.type === "credit"
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }
+                    >
+                      ₹{t.amount}
+                    </span>
+                  </p>
+
+                  <p className="text-gray-400 text-sm capitalize">
+                    Status:{" "}
+                    <span
+                      className={
+                        t.status === "approved"
+                          ? "text-green-400"
+                          : t.status === "pending"
+                          ? "text-yellow-400"
+                          : "text-red-400"
+                      }
+                    >
+                      {t.status}
+                    </span>
+                  </p>
+
+                  <p className="text-gray-500 text-xs">
+                    {new Date(t.createdAt).toLocaleString()}
+                  </p>
+                </div>
+
+                {/* Screenshot Preview if available */}
+                {t.screenshot && (
+                  <img
+                    src={getImageUrl(t.screenshot)}
+                    alt="proof"
+                    className="w-16 h-16 object-cover rounded border border-gray-700"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

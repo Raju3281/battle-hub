@@ -135,7 +135,7 @@ export default function Recharge() {
                   9515227207-2@ybl
                 </span>
                 <button
-                  onClick={() => navigator.clipboard.writeText("battlehub@upi")}
+                  onClick={() => navigator.clipboard.writeText("9515227207-2@ybl")}
                   className="bg-yellow-500 text-black px-3 py-1 rounded-lg"
                 >
                   Copy
