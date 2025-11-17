@@ -365,6 +365,7 @@ export default function CreateMatch() {
                   {new Date(viewData.matchTime).toLocaleString("en-IN", {
                     hour12: true,
                   })}
+                   {/* {new Date(viewData.matchTime)} */}
                 </p>
 
                 <p className="text-gray-300">💰 Prize Pool: ₹{viewData.prizePool}</p>

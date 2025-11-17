@@ -25,6 +25,7 @@ import SetPrizePool from './features/admin/SetPrizePool';
 import ProtectedRoute from './components/ProtectedRoute';
 import UpdateLiveLinks from './features/admin/UpdateLiveLinks';
 import RoomIdPass from './features/admin/RoomIdPass';
+import HelpSupport from './features/dashboard/Help';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -51,8 +52,9 @@ function App() {
 
               <Route path="solo" element={<Solo />} />
               <Route path="solo/join" element={<JoinSolo />} />
+              
             </Route>
-
+            <Route path="help-support" element={<HelpSupport />} />
             <Route path="booked" element={<BookedMatches />} />
             <Route path="completed" element={<CompletedMatches />} />
             <Route path="recharge" element={<Recharge />} />

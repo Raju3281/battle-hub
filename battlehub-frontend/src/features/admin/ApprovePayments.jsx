@@ -10,8 +10,8 @@ export default function ApprovePayments() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [rejectModal, setRejectModal] = useState({ open: false, id: null });
   const [rejectReason, setRejectReason] = useState("");
-
-
+  const [editOpen, setEditOpen] = useState(false);
+  const [amount, setAmount] = useState(0);
   const getImageUrl = (screenshot) => {
     if (!screenshot?.data) return "";
 
@@ -44,13 +44,17 @@ export default function ApprovePayments() {
   const handleApprove = async (paymentId) => {
     try {
       const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
-
+      let obj = {
+        status: "approved",
+      };
+      if (amount > 0) {
+        obj.amount = amount;
+      }
       const { data } = await api.put(
         `/wallet/update-status/${paymentId}`,
-        { status: "approved" },
+        obj,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       toast.success(data.message || "Payment approved!");
       fetchPayments();
     } catch (err) {
@@ -102,7 +106,7 @@ export default function ApprovePayments() {
             >
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-bold text-yellow-400">
-                  {p.user?.username}
+                  {p.type.toUpperCase()} <span className="text-sm font-bold text-green-400">({p.source.toUpperCase()})</span> 
                 </h3>
                 <span
                   className={`text-xs px-2 py-1 rounded ${p.status === "approved"
@@ -115,14 +119,14 @@ export default function ApprovePayments() {
                   {p.status}
                 </span>
               </div>
-
-              <p className="text-gray-400 text-sm mb-1">User ID: {p.user?._id}</p>
+              
+              <p className="text-gray-400 text-sm mb-1">User ID: <span className="text-yellow-400">{p.userId?.username}</span></p>
               <p className="text-gray-400 text-sm mb-1">
-                Amount: <span className="text-yellow-400">₹{p.amount}</span>
+                Amount: <span className="text-yellow-400">₹{amount&&p.amount!=amount?amount:p.amount}</span>
               </p>
-              <p className="text-gray-400 text-sm mb-3">UPI: {p.upi}</p>
+              <p className="text-gray-400 text-sm mb-3">UPI: <span className="text-yellow-400">{p.userId?.upi}</span></p>
 
-              {p.screenshot && (
+              {p.status === "pending" && p.screenshot && (
                 <img
                   src={getImageUrl(p.screenshot)}
                   alt="screenshot"
@@ -131,31 +135,70 @@ export default function ApprovePayments() {
                 />
               )}
 
-              {p.status === "pending" && (
-                <div className="flex justify-between">
-                  <button
-                    onClick={() => setSelectedImage(getImageUrl(p.screenshot))}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
-                  >
-                    View
-                  </button>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleApprove(p._id)}
-                      className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={handleReject}
-                      className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
-                    >
-                      Reject
-                    </button>
+             {p.status === "pending" && (
+  <>
+    {/* Recharge (credit) actions */}
+    {p.type === "credit" && p.source === "recharge" && (
+      <div className="flex justify-between">
+        <button
+          onClick={() => setSelectedImage(getImageUrl(p.screenshot))}
+          className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
+        >
+          View
+        </button>
 
-                  </div>
-                </div>
-              )}
+        <button
+          onClick={() => {
+            setEditOpen(true);
+            setAmount(p.amount);
+          }}
+          className="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded"
+        >
+          Edit Amount
+        </button>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleApprove(p._id)}
+            className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded"
+          >
+            Approve
+          </button>
+
+          <button
+            onClick={() => setRejectModal({ open: true, id: p._id })}
+            className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Reject
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* Withdrawal (debit) actions */}
+    {p.type === "debit" && p.source === "withdrawal" && (
+      <div className="flex justify-between">
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleApprove(p._id)}
+            className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded"
+          >
+            Payment Completed
+          </button>
+
+          <button
+            onClick={() => setRejectModal({ open: true, id: p._id })}
+            className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Reject
+          </button>
+        </div>
+      </div>
+    )}
+  </>
+)}
+
+              
             </div>
           ))}
         </div>
@@ -192,6 +235,41 @@ export default function ApprovePayments() {
                 className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
               >
                 Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {editOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 flex justify-center items-center z-50"
+        >
+          <div
+            className="bg-gray-900 border border-red-500 rounded-lg p-6 w-[90%] max-w-md"
+          >
+            <h3 className="text-lg font-bold text-red-400 mb-3">
+              Edit Amount
+            </h3>
+            <input
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter correct amount"
+              className="bg-gray-800 text-white w-full p-3 rounded border border-gray-700 "
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setEditOpen(false)}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setEditOpen(false)
+                }}
+                className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
+              >
+                Save
               </button>
             </div>
           </div>

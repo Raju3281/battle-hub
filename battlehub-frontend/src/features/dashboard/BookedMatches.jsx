@@ -96,10 +96,8 @@ export default function BookedMatches() {
   //
   // MATCH STATUS
   //
-  const isCompleted = (matchTime) => {
-    const parsed = parseDate(matchTime);
-    if (!parsed) return false;
-    return parsed - new Date() <= 0;
+  const isCompleted = (status) => {
+    return status.toLowerCase()==="completed";
   };
 
   //
@@ -129,7 +127,7 @@ export default function BookedMatches() {
         <div className="grid gap-5">
           {bookedMatches.map((match) => {
             const countdown = timeLeft[match.matchId] || "--";
-            const completed = isCompleted(match.matchTime);
+            const completed = isCompleted(match.status);
 
             return (
               <div
@@ -172,8 +170,16 @@ export default function BookedMatches() {
                   ) : (
                     <span className="text-yellow-400 text-sm">
                       Starts in: {countdown}
+                      {match.roomId && (
+                        <div className="text-green-400 text-sm font-bold border border-green-400 p-2 mt-2 rounded">
+                             <h1>Room ID : {match.roomId}</h1>
+                         <h1>Pass : {match.roomId}</h1>
+                        </div>
+                     
+                      )}
                     </span>
                   )}
+                  
 
                   <button
                     onClick={() => openModal(match.matchId)}

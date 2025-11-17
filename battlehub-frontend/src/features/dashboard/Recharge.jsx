@@ -39,34 +39,37 @@ export default function Recharge() {
   const handleProofSubmit = async () => {
     if (!uploadFile) return alert("Upload screenshot!");
     const userId = JSON.parse(EncryptedStorage.get("battlehub_user")).userId;
+     setIsUploading(true);  // ⬅️ START LOADING
     try {
       const formData = new FormData();
       formData.append("file", uploadFile);
       formData.append("amount", amount);
       formData.append("userId", userId); // or get from token backend
-      
-      const res = await api.post("/wallet/transaction",formData, {
+
+      const res = await api.post("/wallet/transaction", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-       setStep("processing");
+      setStep("processing");
+       setIsUploading(true);  // ⬅️ START LOADING
       console.log("Transaction created:", res.data);
     } catch (err) {
       console.error("Error:", err);
+       setIsUploading(false);  // ⬅️ START LOADING
       alert("Upload failed");
     }
   };
-   const getUserBalance =async (id) => {
-          const res = await api.get(`/payments/balance/${id}`);
-          console.log("Balance fetch",res.data.balance);
-          if(res.data.balance!==EncryptedStorage.get("user_balance")){
-            setStep("succes")
-          }
-          
+  const getUserBalance = async (id) => {
+    const res = await api.get(`/payments/balance/${id}`);
+    console.log("Balance fetch", res.data.balance);
+    if (res.data.balance !== EncryptedStorage.get("user_balance")) {
+      setStep("succes")
+    }
+
   }
   useEffect(() => {
-   getUserBalance((JSON.parse(EncryptedStorage.get("battlehub_user"))).userId);
+    getUserBalance((JSON.parse(EncryptedStorage.get("battlehub_user"))).userId);
   }, [timer]);
-   
+
 
 
   return (
@@ -107,18 +110,16 @@ export default function Recharge() {
           <div className="flex gap-4">
             <button
               onClick={() => setSelectedMethod("upi")}
-              className={`px-6 py-3 rounded-lg border ${
-                selectedMethod === "upi" ? "bg-yellow-500 text-black" : "bg-gray-800"
-              }`}
+              className={`px-6 py-3 rounded-lg border ${selectedMethod === "upi" ? "bg-yellow-500 text-black" : "bg-gray-800"
+                }`}
             >
               UPI
             </button>
 
             <button
               onClick={() => setSelectedMethod("qr")}
-              className={`px-6 py-3 rounded-lg border ${
-                selectedMethod === "qr" ? "bg-yellow-500 text-black" : "bg-gray-800"
-              }`}
+              className={`px-6 py-3 rounded-lg border ${selectedMethod === "qr" ? "bg-yellow-500 text-black" : "bg-gray-800"
+                }`}
             >
               QR Code
             </button>
@@ -152,9 +153,8 @@ export default function Recharge() {
               <button
                 disabled={!uploadFile || isUploading}
                 onClick={handleProofSubmit}
-                className={`mt-5 px-6 py-3 rounded-lg font-semibold ${
-                  uploadFile ? "bg-yellow-500" : "bg-gray-700 cursor-not-allowed"
-                }`}
+                className={`mt-5 px-6 py-3 rounded-lg font-semibold ${uploadFile ? "bg-yellow-500" : "bg-gray-700 cursor-not-allowed"
+                  }`}
               >
                 {isUploading ? "Uploading..." : "Submit Payment Proof"}
               </button>
@@ -184,11 +184,17 @@ export default function Recharge() {
               <button
                 disabled={!uploadFile || isUploading}
                 onClick={handleProofSubmit}
-                className={`mt-5 px-6 py-3 rounded-lg ${
-                  uploadFile ? "bg-yellow-500" : "bg-gray-600 cursor-not-allowed"
-                }`}
+                className={`mt-5 px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 ${uploadFile ? "bg-yellow-500" : "bg-gray-600 cursor-not-allowed"
+                  }`}
               >
-                {isUploading ? "Uploading..." : "Submit Payment Proof"}
+                {isUploading ? (
+                  <>
+                    <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                    Uploading...
+                  </>
+                ) : (
+                  "Submit Payment Proof"
+                )}
               </button>
             </div>
           )}
