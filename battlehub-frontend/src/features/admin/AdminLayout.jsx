@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import EncryptedStorage from "../../utils/encryptedStorage";
 import { Auth } from "../../utils/auth";
+import { LogOutIcon } from "lucide-react";
 
 export default function AdminLayout() {
   const [isOpen, setIsOpen] = useState(true);
@@ -21,9 +22,8 @@ export default function AdminLayout() {
     <div className="w-full h-full flex bg-gray-950 text-white">
       {/* Sidebar */}
       <div
-        className={`fixed md:static h-screen bg-gray-900 border-r border-gray-800 p-4 flex flex-col justify-between transition-all duration-300 z-40 ${
-          isOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"
-        } md:translate-x-0`}
+        className={`fixed md:static h-screen bg-gray-900 border-r border-gray-800 p-4 flex flex-col justify-between transition-all duration-300 z-40 ${isOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"
+          } md:translate-x-0`}
       >
         {/* Top Section */}
         <div>
@@ -41,13 +41,13 @@ export default function AdminLayout() {
           <nav className="flex flex-col gap-2">
             {menuItems.map((item) => (
               <NavLink
+                onClick={() => setIsOpen(false)}
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center rounded-lg px-4 py-3 font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-yellow-500 text-black shadow-lg"
-                      : "bg-transparent hover:bg-gray-800 text-gray-300"
+                  `flex items-center rounded-lg px-4 py-3 font-medium transition-all duration-200 ${isActive
+                    ? "bg-yellow-500 text-black shadow-lg"
+                    : "bg-transparent hover:bg-gray-800 text-gray-300"
                   }`
                 }
               >
@@ -58,16 +58,9 @@ export default function AdminLayout() {
         </div>
 
         {/* Logout / Support */}
-        <div className="border-t border-gray-800 pt-4 mt-6">
-          <button
-            onClick={() => {
-              Auth.logout();
-              navigate("/login")}}
-            className="block w-full text-left rounded-lg px-3 py-2 font-medium text-gray-400 hover:bg-gray-800 hover:text-yellow-400"
-          >
-            🚪 Logout
-          </button>
-        </div>
+        {/* <div className="border-t border-gray-800 pt-4 mt-6">
+         
+        </div> */}
       </div>
 
       {/* Main Content Area */}
@@ -102,12 +95,16 @@ export default function AdminLayout() {
 
             {/* Profile */}
             <div className="flex items-center gap-3">
-              <span className="text-gray-300 hidden sm:inline">Hi, Admin</span>
-              <img
-                src="https://ui-avatars.com/api/?name=Admin+R&background=yellow&color=black"
-                alt="Profile"
-                className="w-10 h-10 rounded-full border border-yellow-400"
-              />
+              <button
+                onClick={() => {
+                  Auth.logout();
+                  navigate("/login")
+                }}
+                title="logout"
+                className="block w-full text-left rounded-lg px-3 py-2 font-medium text-gray-400 hover:bg-gray-800 hover:text-yellow-400"
+              >
+                <LogOutIcon/>
+              </button>
             </div>
           </div>
         </header>
