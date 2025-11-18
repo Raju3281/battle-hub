@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../utils/api";
+import { getTimeDate } from "../../utils/time";
 
 export default function RoomIdPass() {
   const [matches, setMatches] = useState([]);
@@ -77,7 +78,7 @@ export default function RoomIdPass() {
         <option value="">-- Select Match --</option>
         {matches.map((match) => (
           <option key={match._id} value={match._id}>
-            {match.matchName} — {new Date(match.matchTime).toLocaleString()}
+            {match.matchName} — {new Date(getTimeDate(match.matchTime)).toLocaleString()}
           </option>
         ))}
       </select>

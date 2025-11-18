@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import api from "../../utils/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getTimeDate } from "../../utils/time";
 
 export default function UpdateResults() {
   const [matches, setMatches] = useState([]);
@@ -393,7 +394,7 @@ export default function UpdateResults() {
                   <td className="p-3">{m.matchType}</td>
                   <td className="p-3">₹{m.prizePool}</td>
                   <td className="p-3 text-gray-400">
-                    {new Date(m.matchTime).toLocaleString()}
+                    {new Date(getTimeDate(m.matchTime)).toLocaleString()}
                   </td>
                   <td className="p-3">
                     <button

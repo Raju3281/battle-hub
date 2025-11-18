@@ -84,17 +84,17 @@ export default function AllUsers() {
 
   // 💰 Fetch wallet details
   const fetchWalletDetails = async (id) => {
-    try {
-      const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
-      const { data } = await api.get(
-        `/users/wallet/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setWalletData(data);
-    } catch (error) {
-      console.error("Error fetching wallet details:", error);
-      toast.error("Failed to load wallet data");
-    }
+    // try {
+    //   const token = JSON.parse(EncryptedStorage.get("battlehub_user"))?.token;
+    //   const { data } = await api.get(
+    //     `/users/wallet/${id}`,
+    //     { headers: { Authorization: `Bearer ${token}` } }
+    //   );
+    //   setWalletData(data);
+    // } catch (error) {
+    //   console.error("Error fetching wallet details:", error);
+    //   toast.error("Failed to load wallet data");
+    // }
   };
 
   // 👁️ View user details

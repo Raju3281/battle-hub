@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import api from "../../utils/api"; // shared axios instance
+import { getTimeDate } from "../../utils/time";
 
 export default function CreateMatch() {
   // Match Details
@@ -319,7 +320,7 @@ export default function CreateMatch() {
                   <td className="p-3">₹{m.prizePool}</td>
 
                   <td className="p-3 text-gray-400">
-                    {new Date(m.matchTime).toLocaleString("en-IN", {
+                    {new Date(getTimeDate(m.matchTime)).toLocaleString("en-IN", {
                       hour12: true,
                     })}
                   </td>
@@ -362,7 +363,7 @@ export default function CreateMatch() {
 
                 <p className="text-gray-300">
                   🕒{" "}
-                  {new Date(viewData.matchTime).toLocaleString("en-IN", {
+                  {new Date(getTimeDate(viewData.matchTime)).toLocaleString("en-IN", {
                     hour12: true,
                   })}
                    {/* {new Date(viewData.matchTime)} */}

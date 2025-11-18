@@ -26,6 +26,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import UpdateLiveLinks from './features/admin/UpdateLiveLinks';
 import RoomIdPass from './features/admin/RoomIdPass';
 import HelpSupport from './features/dashboard/Help';
+import ForgotPassword from './features/auth/ForgotPassword';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -36,6 +37,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           {/* <Route path="/dashboard" element={<DashboardLayout />}> */}
           <Route path="/dashboard" element={
             <ProtectedRoute allowed="user">

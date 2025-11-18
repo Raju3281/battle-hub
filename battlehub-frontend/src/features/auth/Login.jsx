@@ -127,8 +127,8 @@ export default function Login() {
           </div>
 
           {/* Remember Me */}
-          <div className="flex items-center justify-between text-sm text-gray-400">
-            <label className="flex items-center gap-2">
+          <div className="flex items-center justify-end text-sm text-gray-400">
+            {/* <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={remember}
@@ -136,8 +136,8 @@ export default function Login() {
                 className="accent-yellow-500 w-4 h-4"
               />
               Remember Me
-            </label>
-            <a href="#" className="text-yellow-400 hover:underline font-medium">
+            </label> */}
+            <a href="/forgot-password" className="text-yellow-400 hover:underline font-medium">
               Forgot Password?
             </a>
           </div>
