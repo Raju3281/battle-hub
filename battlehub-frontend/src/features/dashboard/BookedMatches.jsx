@@ -173,7 +173,7 @@ export default function BookedMatches() {
                       {match.roomId && (
                         <div className="text-green-400 text-sm font-bold border border-green-400 p-2 mt-2 rounded">
                              <h1>Room ID : {match.roomId}</h1>
-                         <h1>Pass : {match.roomId}</h1>
+                         <h1>Pass : {match.password}</h1>
                         </div>
                      
                       )}
