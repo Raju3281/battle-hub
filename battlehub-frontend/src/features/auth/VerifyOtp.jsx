@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../../utils/api";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function VerifyOtp({ email }) {
   const [otp, setOtp] = useState("");
@@ -8,15 +9,17 @@ export default function VerifyOtp({ email }) {
   const verifyOtp = async () => {
     try {
       const res = await api.post("/auth/verify-otp", { email, otp });
-      alert("OTP Verified!");
+      toast.success("OTP Verified!");
       setStep(3);
     } catch (err) {
-      alert("Invalid or expired OTP");
+      toast.error("Invalid or expired OTP");
     }
   };
 
   return step === 2 ? (
     <div>
+                        <ToastContainer autoClose={1000} theme="dark" position="top-center" />
+
       <h3>Enter OTP</h3>
       <input
         type="text"

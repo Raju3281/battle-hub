@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function SetPrizePool() {
   const [matches, setMatches] = useState([]);
@@ -49,7 +50,7 @@ export default function SetPrizePool() {
   // 💾 Save
   const handleSave = (e) => {
     e.preventDefault();
-    if (!selectedMatch) return alert("Select a match first!");
+    if (!selectedMatch) return toast.error("Select a match first!");
 
     const data = {
       matchId: selectedMatch,
@@ -69,7 +70,7 @@ export default function SetPrizePool() {
       }
     });
 
-    alert(`✅ Prize Pool Structure saved for ${selectedMatchData.name}`);
+    toast.success(`✅ Prize Pool Structure saved for ${selectedMatchData.name}`);
   };
 
   // 🧮 Auto distribute (50/30/20 or similar)
@@ -92,6 +93,8 @@ export default function SetPrizePool() {
 
   return (
     <div className="text-white">
+            <ToastContainer theme="dark" position="top-right" />
+
       <h2 className="text-2xl font-bold text-yellow-400 mb-6">
         Set Match Prize Pool 🏆
       </h2>

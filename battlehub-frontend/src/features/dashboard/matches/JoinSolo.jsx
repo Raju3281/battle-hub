@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function JoinSolo() {
   const [formData, setFormData] = useState({
@@ -9,11 +10,12 @@ export default function JoinSolo() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Solo Registered:", formData);
-    alert("Solo Match Registered Successfully! 🏆");
+    toast.success("Solo Match Registered Successfully! 🏆");
   };
 
   return (
     <div className="w-full flex justify-center">
+      <ToastContainer theme="dark" position="top-right" />
       <div className=" p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold text-yellow-400 text-center mb-6">
           Join Solo Match 🎯

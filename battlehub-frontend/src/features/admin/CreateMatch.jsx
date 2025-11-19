@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import api from "../../utils/api"; // shared axios instance
 import { getTimeDate } from "../../utils/time";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function CreateMatch() {
   // Match Details
@@ -54,7 +55,7 @@ export default function CreateMatch() {
   // Auto Split
   const autoSplit = () => {
     const total = parseInt(totalPrizePool) || 0;
-    if (!total) return alert("Enter total prize pool first!");
+    if (!total) return toast.error("Enter total prize pool first!");
 
     const splits =
       rankCount === 3
@@ -77,7 +78,7 @@ export default function CreateMatch() {
       const { data } = await api.get("/matches");
       setMatches(Array.isArray(data) ? data : data.matches || []);
     } catch (err) {
-      alert("Failed to load matches");
+      toast.error("Failed to load matches");
     }
   };
 
@@ -116,7 +117,7 @@ export default function CreateMatch() {
       setHighestKill("");
       setRemarks("");
     } catch (err) {
-      alert(err.response?.data?.message || "Something went wrong");
+      toast.error(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -129,7 +130,7 @@ export default function CreateMatch() {
       const { data } = await api.get(`/matches/${id}`);
       setViewData(data);
     } catch (err) {
-      alert("Failed to fetch details");
+      toast.error("Failed to fetch details");
     } finally {
       setViewLoading(false);
     }
@@ -137,6 +138,8 @@ export default function CreateMatch() {
 
   return (
     <div className="text-white w-full p-4 sm:p-6 bg-gradient-to-br from-gray-950 via-gray-900 to-black min-h-screen">
+            <ToastContainer theme="dark" position="top-right" />
+
       <h2 className="text-2xl font-bold text-yellow-400 mb-6">Create New Match ⚔️</h2>
 
       {message && (

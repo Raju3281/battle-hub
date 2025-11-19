@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function JoinDuo() {
   const [formData, setFormData] = useState({
@@ -18,11 +19,13 @@ export default function JoinDuo() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Duo Registered:", formData);
-    alert("Duo Registered Successfully! ⚔️");
+    toast.success("Duo Registered Successfully! ⚔️");
   };
 
   return (
     <div className="w-full flex justify-center">
+            <ToastContainer theme="dark" position="top-right" />
+
       <div className=" p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-2xl">
         <h2 className="text-2xl font-bold text-yellow-400 text-center mb-6">
           Join Duo Match 🎮

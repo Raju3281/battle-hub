@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../../utils/api";
 import EncryptedStorage from "../../../utils/encryptedStorage";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function JoinSquad() {
   const { matchId } = useParams();
@@ -31,16 +32,16 @@ export default function JoinSquad() {
   const handleTeamChange = (e) => {
     setFormData({ ...formData, teamName: e.target.value });
   };
-
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!userId) {
-      alert("Please login first");
+      toast.error("Please login first");
       navigate("/login");
       return;
     }
-
+    setLoading(true);
     try {
       const payload = {
         userId,
@@ -51,32 +52,42 @@ export default function JoinSquad() {
       const res = await api.post(`/matches/join/${matchId}`, payload);
 
       console.log("Joined:", res.data);
-      alert("Squad Registered Successfully!");
-      navigate("/dashboard");
-
+      toast.success("Squad Registered Successfully!");
+      setFormData({
+        teamName: "",
+        players: [
+          { playerName: "", inGameId: "" },
+          { playerName: "", inGameId: "" },
+          { playerName: "", inGameId: "" },
+          { playerName: "", inGameId: "" },
+        ],
+      })
+      // navigate("/dashboard");
+      setLoading(false);
     } catch (error) {
       console.error("Join Error:", error);
-
+      setLoading(false);
       // Show duplicate BGMI ID if exists
       if (error?.response?.data?.duplicateId) {
-        alert(
+        toast.error(
           `Duplicate BGMI ID: ${error.response.data.duplicateId} already registered for this match`
         );
       } else {
-        alert(error?.response?.data?.message || "Error joining match!");
+        toast.error(error?.response?.data?.message || "Error joining match!");
       }
     }
   };
-  const [matchFee,setMatchFee]=useState(0);
-useEffect(() => {
-   api
+  const [matchFee, setMatchFee] = useState(0);
+  useEffect(() => {
+    api
       .get(`matches/matchFee/${matchId}`)
       .then((res) => setMatchFee(res.data.entryFee))
       .catch((err) => console.error("Fetch Error:", err));
-}, []);
+  }, []);
 
   return (
     <div className="w-full flex justify-center">
+      <ToastContainer theme="dark" position="top-right" />
       <div className="p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-2xl">
 
         <h2 className="text-2xl font-bold text-yellow-400 text-center mb-6">
@@ -115,7 +126,7 @@ useEffect(() => {
                   <input
                     type="text"
                     required
-                    value={player.name}
+                    value={player.playerName}
                     onChange={(e) =>
                       handleChange(index, "playerName", e.target.value)
                     }
@@ -137,14 +148,16 @@ useEffect(() => {
               </div>
             ))}
           </div>
-<h2 className="text-xl font-bold text-yellow-400 text-center mb-6">
-          Entry Fee: Rs.{matchFee} 
-        </h2>
+          <h2 className="text-xl font-bold text-yellow-400 text-center mb-6">
+            Entry Fee: Rs.{matchFee}
+          </h2>
           <button
             type="submit"
+            disabled={loading}
             className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg w-full"
           >
-            Register Squad
+            {loading ? "Registering..." : "Register Squad"}
+            
           </button>
         </form>
       </div>

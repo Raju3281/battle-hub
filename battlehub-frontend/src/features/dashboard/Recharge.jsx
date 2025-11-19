@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../../utils/api";
 import EncryptedStorage from "../../utils/encryptedStorage";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function Recharge() {
   const [amount, setAmount] = useState("");
@@ -31,13 +32,15 @@ export default function Recharge() {
 
   const handleRechargeSubmit = (e) => {
     e.preventDefault();
-    if (!amount || parseInt(amount) <= 0) return alert("Enter valid amount!");
+    if (!amount || parseInt(amount) <= 0) return toast.error("Enter valid amount!");
+    if (amount <50) return toast.error("Minimum recharge amount is ₹50");
+
     setStep("payment");
   };
 
   // Upload screenshot + submit recharge info
   const handleProofSubmit = async () => {
-    if (!uploadFile) return alert("Upload screenshot!");
+    if (!uploadFile) return toast.success("Upload screenshot!");
     const userId = JSON.parse(EncryptedStorage.get("battlehub_user")).userId;
      setIsUploading(true);  // ⬅️ START LOADING
     try {
@@ -55,14 +58,14 @@ export default function Recharge() {
     } catch (err) {
       console.error("Error:", err);
        setIsUploading(false);  // ⬅️ START LOADING
-      alert("Upload failed");
+      toast.error("Upload failed");
     }
   };
   const getUserBalance = async (id) => {
     const res = await api.get(`/payments/balance/${id}`);
     console.log("Balance fetch", res.data.balance);
     if (res.data.balance !== EncryptedStorage.get("user_balance")) {
-      setStep("succes")
+      setStep("success")
     }
 
   }
@@ -74,6 +77,7 @@ export default function Recharge() {
 
   return (
     <div className="max-w-2xl mx-auto bg-gray-900 border border-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg text-white">
+      <ToastContainer autoClose={1000} theme="dark" position="top-center" />
 
       <h2 className="text-2xl font-bold text-yellow-400 text-center mb-6">
         Recharge Wallet 💰
@@ -94,7 +98,7 @@ export default function Recharge() {
             className="w-64 p-3 bg-gray-800 border border-gray-700 rounded-lg text-center text-lg"
             required
           />
-
+          <span className="text-sm text-gray-400">Minimum recharge amount is ₹50</span>
           <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg">
             Proceed to Pay
           </button>

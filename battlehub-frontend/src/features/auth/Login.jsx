@@ -4,6 +4,7 @@ import axios from "axios";
 import { Auth } from "../../utils/auth"; // your helper for token management
 import api from "../../utils/api";
 import { LOGIN_URL } from "../../utils/apiConstants";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ export default function Login() {
     const { usernameOrPhone, password } = formData;
 
     if (!usernameOrPhone || !password) {
-      alert("⚠️ Please enter both username and password!");
+      toast.error("⚠️ Please enter both username and password!");
       return;
     }
 
@@ -55,14 +56,14 @@ export default function Login() {
         role: user.role,
       });
 
-      alert("✅ Login Successful!");
+      toast.success("✅ Login Successful!");
 
       console.log("Logged in user:", user);
       if (user.role === "admin") navigate("/admin", { replace: true });
       else navigate("/dashboard", { replace: true });
     } catch (error) {
       console.error(error);
-      alert(
+      toast.error(
         error.response?.data?.message || "❌ Invalid credentials. Try again!"
       );
     } finally {
@@ -73,6 +74,8 @@ export default function Login() {
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-gray-950 to-black flex justify-center items-center">
       {/* Background Glow */}
+            <ToastContainer theme="dark" position="top-right" />
+
       <div className="absolute -z-10 w-[500px] h-[500px] bg-yellow-500/10 blur-3xl rounded-full"></div>
 
       {/* Login Card */}

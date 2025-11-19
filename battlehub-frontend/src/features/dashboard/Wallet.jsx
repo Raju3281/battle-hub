@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EncryptedStorage from "../../utils/encryptedStorage";
 import api from "../../utils/api";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function Wallet() {
   const navigate = useNavigate();
@@ -63,7 +64,7 @@ export default function Wallet() {
   // Save UPI
   const handleUpiSave = async (e) => {
     e.preventDefault();
-    if (!upiId.trim()) return alert("Please enter a valid UPI ID!");
+    if (!upiId.trim()) return toast.error("Please enter a valid UPI ID!");
 
     try {
       setLoading(true);
@@ -73,10 +74,10 @@ export default function Wallet() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      alert("UPI ID updated successfully!");
+      toast.success("UPI ID updated successfully!");
     } catch (err) {
       console.error(err);
-      alert("Failed to update UPI ID.");
+      toast.error("Failed to update UPI ID.");
     } finally {
       setLoading(false);
     }
@@ -86,11 +87,13 @@ export default function Wallet() {
   const handleWithdraw = async (e) => {
     e.preventDefault();
 
-    if (!upiId) return alert("Please set your UPI ID first!");
+    if (!upiId) return toast.error("Please set your UPI ID first!");
     if (!withdrawAmount || withdrawAmount <= 0)
-      return alert("Enter valid withdraw amount!");
+      return toast.error("Enter valid withdraw amount!");
+    if (withdrawAmount < 50)
+      return toast.error("Minimum withdraw amount is ₹50");
     if (withdrawAmount > balance)
-      return alert("Insufficient balance!");
+      return toast.error("Insufficient balance!");
 
     try {
       setWithdrawLoading(true);
@@ -105,14 +108,14 @@ export default function Wallet() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      alert(`Withdraw request of ₹${withdrawAmount} submitted!`);
+      toast.success(`Withdraw request of ₹${withdrawAmount} submitted!`);
       setWithdrawAmount("");
 
       fetchBalance();
       fetchHistory(); // refresh history
     } catch (err) {
       console.error(err);
-      alert("Failed to submit withdrawal request.");
+      toast.error("Failed to submit withdrawal request.");
     } finally {
       setWithdrawLoading(false);
     }
@@ -120,6 +123,7 @@ export default function Wallet() {
 
   return (
     <div className="max-w-3xl mx-auto bg-gray-900/80 border border-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg text-white">
+      <ToastContainer theme="dark" position="top-right" />
       <h2 className="text-2xl font-bold text-yellow-400 text-center mb-6">
         My Wallet 💰
       </h2>
@@ -198,7 +202,8 @@ export default function Wallet() {
             )}
           </button>
         </div>
-
+        <p className="text-yellow-400 text-sm mt-2">
+          Minimum amount for withdrawal is 50 Rs</p>
         <p className="text-gray-400 text-sm mt-2">
           Withdrawals will be processed within 24 hours.
         </p>
@@ -242,8 +247,8 @@ export default function Wallet() {
                         t.status === "approved"
                           ? "text-green-400"
                           : t.status === "pending"
-                          ? "text-yellow-400"
-                          : "text-red-400"
+                            ? "text-yellow-400"
+                            : "text-red-400"
                       }
                     >
                       {t.status}

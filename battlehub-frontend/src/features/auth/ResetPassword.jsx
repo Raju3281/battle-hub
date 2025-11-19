@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../../utils/api";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function ResetPassword({ email }) {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function ResetPassword({ email }) {
   };
 
   const handleReset = async () => {
-    if (newPassword !== confirm) return alert("⚠️ Passwords do not match!");
+    if (newPassword !== confirm) return toast.error("⚠️ Passwords do not match!");
 
     if (!validatePassword(newPassword)) {
       setPasswordError(
@@ -30,10 +31,10 @@ export default function ResetPassword({ email }) {
 
     try {
       await api.post("/auth/reset-password", { email, newPassword });
-      alert("🎉 Password reset successful!");
+      toast.success("🎉 Password reset successful!");
       navigate("/login");
     } catch {
-      alert("❌ Failed to reset password. Try again.");
+      toast.error("❌ Failed to reset password. Try again.");
     } finally {
       setLoading(false);
     }
@@ -41,6 +42,8 @@ export default function ResetPassword({ email }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center p-4">
+                  <ToastContainer autoClose={1000} theme="dark" position="top-center" />
+
       <div className="bg-gray-900/90 backdrop-blur-md text-white w-full max-w-sm sm:max-w-md md:max-w-lg rounded-2xl shadow-2xl border border-gray-800 p-6 sm:p-8 mx-auto">
         
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-yellow-400 mb-6">

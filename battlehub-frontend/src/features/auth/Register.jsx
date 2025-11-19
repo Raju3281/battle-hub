@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../utils/api";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -42,12 +43,12 @@ export default function Register() {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("⚠️ Passwords do not match!");
+      toast.error("⚠️ Passwords do not match!");
       return;
     }
 
     if (!validatePassword(formData.password)) {
-      alert("⚠️ Invalid password format!");
+      toast.error("⚠️ Invalid password format!");
       return;
     }
 
@@ -61,12 +62,12 @@ export default function Register() {
         password: formData.password,
       });
 
-      alert("🎉 Registration successful! You can now log in.");
+      toast.error("🎉 Registration successful! You can now log in.");
       navigate("/login");
 
     } catch (error) {
       console.error("❌ Registration Error:", error);
-      alert(
+      toast.error(
         error.response?.data?.message ||
         "Registration failed. Please try again."
       );
@@ -77,6 +78,8 @@ export default function Register() {
 
   return (
     <div className="w-full bg-gradient-to-br rounded-lg to-black flex items-center justify-center p-4">
+            <ToastContainer autoClose={1000} theme="dark" position="top-center" />
+
       <div className="bg-gray-900/90 backdrop-blur-md text-white w-full max-w-sm sm:max-w-md md:max-w-lg rounded-2xl shadow-2xl border border-gray-800 p-6 sm:p-8 mx-auto">
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-yellow-400 mb-6">
           BattleHub Sign Up ⚔️
