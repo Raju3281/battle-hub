@@ -33,7 +33,7 @@ export default function Recharge() {
   const handleRechargeSubmit = (e) => {
     e.preventDefault();
     if (!amount || parseInt(amount) <= 0) return toast.error("Enter valid amount!");
-    if (amount <50) return toast.error("Minimum recharge amount is ₹50");
+    if (amount <20) return toast.error("Minimum recharge amount is ₹20");
 
     setStep("payment");
   };
@@ -98,7 +98,7 @@ export default function Recharge() {
             className="w-64 p-3 bg-gray-800 border border-gray-700 rounded-lg text-center text-lg"
             required
           />
-          <span className="text-sm text-gray-400">Minimum recharge amount is ₹50</span>
+          <span className="text-sm text-gray-400">Minimum recharge amount is ₹20</span>
           <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 py-3 rounded-lg">
             Proceed to Pay
           </button>
