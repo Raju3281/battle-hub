@@ -27,6 +27,8 @@ import UpdateLiveLinks from './features/admin/UpdateLiveLinks';
 import RoomIdPass from './features/admin/RoomIdPass';
 import HelpSupport from './features/dashboard/Help';
 import ForgotPassword from './features/auth/ForgotPassword';
+import ReferAndEarn from './features/dashboard/ReferAndEarn';
+import AdminReferPanel from './features/admin/AdminReferPanel';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -44,6 +46,7 @@ function App() {
               <DashboardLayout />
             </ProtectedRoute>}>
             <Route index element={<Navigate to="matches" replace />} />
+
             <Route path="matches" element={<Matches />}>
               <Route index element={<Navigate to="squad" replace />} />{/* Default tab */}
               <Route path="squad" element={<Squad />} />
@@ -56,12 +59,14 @@ function App() {
               <Route path="solo/join" element={<JoinSolo />} />
               
             </Route>
+
             <Route path="help-support" element={<HelpSupport />} />
             <Route path="booked" element={<BookedMatches />} />
             <Route path="completed" element={<CompletedMatches />} />
             <Route path="recharge" element={<Recharge />} />
             <Route path="wallet" element={<Wallet />} />
             <Route path="watch" element={<WatchOnYouTube />} />
+            <Route path="refer-earn" element={<ReferAndEarn />} />
 
           </Route>
           {/* <Route path="/admin" element={<AdminLayout />}> */}
@@ -78,6 +83,7 @@ function App() {
             <Route path="registered-users" element={<AllUsers />} />
             <Route path="live-links" element={<UpdateLiveLinks />} />
             <Route path="id-pass" element={<RoomIdPass />} />
+            <Route path="refer-data" element={<AdminReferPanel />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

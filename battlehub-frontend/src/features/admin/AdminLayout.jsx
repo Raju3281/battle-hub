@@ -16,6 +16,7 @@ export default function AdminLayout() {
     { name: "Registered Users", path: "registered-users" },
     { name: "ID & Password", path: "id-pass" },
     { name: "Update live links", path: "live-links" },
+    { name: "Refer and Earn Data", path: "refer-data" },
   ];
 
   return (

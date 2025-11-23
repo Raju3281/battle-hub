@@ -10,6 +10,7 @@ export default function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    referralCode: "",
   });
   const [loading, setLoading] = useState(false);
   const [passwordError, setPasswordError] = useState(""); // ⬅️ New state
@@ -60,6 +61,7 @@ export default function Register() {
         phone: formData.phone,
         email: formData.email,
         password: formData.password,
+        referralCode: formData.referralCode || "",
       });
 
       toast.error("🎉 Registration successful! You can now log in.");
@@ -78,7 +80,7 @@ export default function Register() {
 
   return (
     <div className="w-full bg-gradient-to-br rounded-lg to-black flex items-center justify-center p-4">
-            <ToastContainer autoClose={1000} theme="dark" position="top-center" />
+      <ToastContainer autoClose={1000} theme="dark" position="top-center" />
 
       <div className="bg-gray-900/90 backdrop-blur-md text-white w-full max-w-sm sm:max-w-md md:max-w-lg rounded-2xl shadow-2xl border border-gray-800 p-6 sm:p-8 mx-auto">
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-yellow-400 mb-6">
@@ -109,9 +111,10 @@ export default function Register() {
               name="phone"
               required
               value={formData.phone}
-              onChange={(e)=>{
-                if(e.target.value.length >11) return;
-                handleChange(e)}}
+              onChange={(e) => {
+                if (e.target.value.length > 11) return;
+                handleChange(e)
+              }}
               className="w-full p-2.5 sm:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-500 text-sm sm:text-base"
               placeholder="Enter your mobile number"
             />
@@ -154,10 +157,11 @@ export default function Register() {
             {passwordError && (
               <p className="text-red-500 text-xs mt-1">{passwordError}</p>
             )}
+
           </div>
 
           {/* Confirm Password */}
-        <div className="relative">
+          <div className="relative">
             <label className="block text-sm font-medium mb-1">
               Confirm Password
             </label>
@@ -170,14 +174,25 @@ export default function Register() {
               className="w-full p-2.5 sm:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-yellow-400 placeholder-gray-500 text-sm sm:text-base"
               placeholder="Re-enter password"
             />
-             <span
+            <span
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-9 cursor-pointer text-gray-400"
             >
               {showConfirmPassword ? "🙈" : "👁️"}
             </span>
           </div>
-
+          <div>
+            <label className="block text-sm font-medium mb-1">Referral Code</label>
+            <input
+              type="text"
+              name="referralCode"
+              required
+              value={formData.referralCode}
+              onChange={handleChange}
+              className="w-full p-2.5 sm:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-500 text-sm sm:text-base"
+              placeholder="Enter Referral Code (Optional)"
+            />
+          </div>
           {/* Submit */}
           <button
             type="submit"

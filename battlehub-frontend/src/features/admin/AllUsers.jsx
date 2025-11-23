@@ -133,6 +133,8 @@ export default function AllUsers() {
               <th className="p-3 border-b border-gray-700">Email</th>
               <th className="p-3 border-b border-gray-700">Phone</th>
               <th className="p-3 border-b border-gray-700">Wallet (₹)</th>
+                            <th className="p-3 border-b border-gray-700">Referred By</th>
+
               <th className="p-3 border-b border-gray-700">Status</th>
               <th className="p-3 border-b border-gray-700">Actions</th>
             </tr>
@@ -157,6 +159,9 @@ export default function AllUsers() {
                   <td className="p-3 border-b border-gray-800">{u.phone}</td>
                   <td className="p-3 border-b border-gray-800 text-green-400 font-semibold">
                     ₹{u.walletBalance || 0}
+                  </td>
+                   <td className="p-3 border-b border-gray-800 text-green-400 font-semibold">
+                    {u.referredBy?.username?u.referredBy?.username:"-"}
                   </td>
                   <td className="p-3 border-b border-gray-800">
                     {u.isBlocked ? (
@@ -229,6 +234,8 @@ export default function AllUsers() {
                   <span className="text-green-400 font-semibold">Active</span>
                 )}
               </p>
+              <p>Referred by: <span className="text-green-400 font-semibold">{viewUser.referredBy?.username?viewUser.referredBy?.username:"-"}</span></p>
+
               <p>📅 Joined: {new Date(viewUser.createdAt).toLocaleDateString()}</p>
             </div>
 
