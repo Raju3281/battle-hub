@@ -166,7 +166,7 @@ export default function Wallet() {
             type="text"
             value={upiId}
             onChange={(e) => setUpiId(e.target.value)}
-            placeholder="Enter your UPI ID (e.g., raju@upi)"
+            placeholder="Enter your UPI ID (e.g., example@upi)"
             className="flex-1 p-3 rounded-lg bg-gray-900 border border-gray-700 text-white"
           />
 
