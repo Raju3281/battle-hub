@@ -57,10 +57,10 @@ export default function Register() {
       setLoading(true);
 
       const { data } = await api.post("/auth/register", {
-        username: formData.username,
+        username: formData.username.trim(),
         phone: formData.phone,
-        email: formData.email,
-        password: formData.password,
+        email: formData.email.trim(),
+        password: formData.password.trim(),
         referralCode: formData.referralCode || "",
       });
 
