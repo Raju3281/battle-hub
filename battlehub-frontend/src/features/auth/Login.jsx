@@ -8,7 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 export default function Login() {
   const [formData, setFormData] = useState({
-    usernameOrPhone: "",
+    email: "",
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -32,9 +32,9 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { usernameOrPhone, password } = formData;
+    const { email, password } = formData;
 
-    if (!usernameOrPhone || !password) {
+    if (!email || !password) {
       toast.error("⚠️ Please enter both username and password!");
       return;
     }
@@ -43,7 +43,7 @@ export default function Login() {
       setLoading(true);
 
       const res = await api.post(LOGIN_URL, {
-        usernameOrPhone,
+        email,
         password,
       });
 
@@ -96,10 +96,10 @@ export default function Login() {
           <div>
             <label className="block text-sm font-medium mb-1">User ID</label>
             <input
-              type="text"
-              name="usernameOrPhone"
+              type="email"
+              name="email"
               required
-              value={formData.usernameOrPhone}
+              value={formData.email}
               onChange={handleChange}
               className="w-full p-2.5 sm:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-500 text-sm sm:text-base"
               placeholder="Enter your username"

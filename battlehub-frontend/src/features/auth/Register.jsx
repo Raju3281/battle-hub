@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../utils/api";
 import { toast, ToastContainer } from "react-toastify";
 
 export default function Register() {
+  const { referralCode } = useParams(); 
   const [formData, setFormData] = useState({
     username: "",
     phone: "",
@@ -77,7 +78,14 @@ export default function Register() {
       setLoading(false);
     }
   };
-
+ useEffect(() => {
+    if (referralCode) {
+      setFormData((prev) => ({
+        ...prev,
+        referralCode   // 👈 auto-fill
+      }));
+    }
+  }, [referralCode]);
   return (
     <div className="w-full bg-gradient-to-br rounded-lg to-black flex items-center justify-center p-4">
       <ToastContainer autoClose={1000} theme="dark" position="top-center" />

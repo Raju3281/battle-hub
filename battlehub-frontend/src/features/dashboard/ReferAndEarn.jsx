@@ -13,12 +13,20 @@ export default function ReferAndEarn() {
   const [loading, setLoading] = useState(true);
 
   // Copy Code
-  const copyCode = () => {
-    navigator.clipboard.writeText(referralCode);
+  const [shareLink, setShareLink] = useState("");
+
+  useEffect(() => {
+    if (referralCode) {
+      const link = `${window.location.origin}/register/${referralCode}`;
+      setShareLink(link);
+    }
+  }, [referralCode]);
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(shareLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
   // 📌 Fetch Referral Info (referralCode, referredBy)
   const fetchReferralInfo = async () => {
     try {
@@ -60,7 +68,7 @@ export default function ReferAndEarn() {
       </p>
 
       {/* Referral Code Box */}
-      <div className="bg-gray-800 border border-gray-700 p-4 rounded-xl flex justify-between items-center mb-6">
+      {/* <div className="bg-gray-800 border border-gray-700 p-4 rounded-xl flex justify-between items-center mb-6">
         <div>
           <p className="text-gray-400 text-sm">Your Referral Code:</p>
           <p className="text-yellow-400 font-bold text-xl tracking-wide">
@@ -73,7 +81,33 @@ export default function ReferAndEarn() {
         >
           {copied ? "Copied!" : "Copy"}
         </button>
+      </div> */}
+      {/* Referral Share Link Box */}
+      <div className="bg-gray-800 border border-gray-700 p-4 rounded-xl mb-6">
+        <p className="text-gray-400 text-sm">Your Referral Link:</p>
+        <p className="text-yellow-400 font-bold text-sm break-all mb-6 ">
+          {shareLink || "Generating..."}
+        </p>
+
+        <div className="flex gap-2 justify-between">
+          <button
+            onClick={copyLink}
+            className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-3 py-2 rounded-lg text-sm"
+          >
+            {copied ? "Copied!" : "Copy Link"}
+          </button>
+          <button>
+            <a
+              href={`https://wa.me/?text=Join%20BattleHub%20using%20my%20link:%20${encodeURIComponent(shareLink)}`}
+              target="_blank"
+              className="bg-green-500 hover:bg-green-400 text-black font-semibold px-3 py-2 rounded-lg text-sm"
+            >
+              WhatsApp Share
+            </a>
+          </button>
+        </div>
       </div>
+
 
       {/* Who referred me (Referrer Info) */}
       {referrerInfo && (
@@ -104,7 +138,7 @@ export default function ReferAndEarn() {
               <ul className="text-gray-300 text-sm space-y-2 max-h-40 overflow-y-auto custom-scroll">
                 {referralStats.referredUsers.map((user, idx) => (
                   <li key={idx} className="border-b border-gray-700 pb-2">
-                    <strong>{user.username}</strong> — {user.email}
+                    <strong>{idx + 1}. {user.username}</strong>
                     <br />
                     <span className="text-gray-400 text-xs">
                       Joined: {new Date(user.createdAt).toLocaleDateString()}
