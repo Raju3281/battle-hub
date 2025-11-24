@@ -151,6 +151,9 @@ export default function JoinSquad() {
           <h2 className="text-xl font-bold text-yellow-400 text-center mb-6">
             Entry Fee: Rs.{matchFee}
           </h2>
+          <h2 className="text-sm font-bold text-white-400 text-center mb-6">
+           Referral balance is debited automatically if available, remaining amount from wallet
+          </h2>
           <button
             type="submit"
             disabled={loading}

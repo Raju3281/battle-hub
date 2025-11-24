@@ -28,7 +28,7 @@ export default function Wallet() {
     );
     return `data:${screenshot.contentType};base64,${base64String}`;
   };
-
+  const [referralBalance, setReferralBalance] = useState(0);
   // ✅ Fetch Wallet Balance
   const fetchBalance = async () => {
     try {
@@ -37,6 +37,7 @@ export default function Wallet() {
       });
 
       setBalance(res.data.user.walletBalance || 0);
+      setReferralBalance(res.data.user.referralBalance || 0);
       EncryptedStorage.set("user_balance", res.data.user.walletBalance);
       setUpiId(res.data.user.upi || "");
     } catch (err) {
@@ -141,11 +142,20 @@ export default function Wallet() {
           + Add Balance
         </button>
       </div>
-
+      <div className="bg-gradient-to-r from-yellow-500 to-yellow-400 text-black rounded-2xl p-5 mb-4 flex justify-between items-center shadow-lg">
+        <div>
+          <p className="text-sm opacity-80">Referral Balance</p>
+          <h3 className="text-3xl font-bold">₹{referralBalance}</h3>
+        </div>
+      </div>
+      <div>
+        <p className="text-sm opacity-80">Note : Referral balance can be used for entry fee only</p>
+        {/* <h3 className="text-3xl font-bold">₹{referralBalance}</h3> */}
+      </div>
       {/* UPI SECTION */}
       <form
         onSubmit={handleUpiSave}
-        className="bg-gray-800 p-5 rounded-xl mb-6 border border-gray-700"
+        className="bg-gray-800 p-5 rounded-xl mt-2 mb-6 border border-gray-700"
       >
         <h3 className="text-lg font-semibold text-yellow-400 mb-3">
           UPI ID Settings
