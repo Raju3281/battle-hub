@@ -102,7 +102,7 @@ export default function Login() {
               value={formData.email}
               onChange={handleChange}
               className="w-full p-2.5 sm:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-500 text-sm sm:text-base"
-              placeholder="Enter your username"
+              placeholder="Enter registered email"
             />
           </div>
 
@@ -141,7 +141,7 @@ export default function Login() {
               Remember Me
             </label> */}
             <a href="/forgot-password" className="text-yellow-400 hover:underline font-medium">
-              Forgot Password / Username?
+              Forgot Password?
             </a>
           </div>
 
