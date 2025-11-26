@@ -29,7 +29,7 @@ import HelpSupport from './features/dashboard/Help';
 import ForgotPassword from './features/auth/ForgotPassword';
 import ReferAndEarn from './features/dashboard/ReferAndEarn';
 import AdminReferPanel from './features/admin/AdminReferPanel';
-import Tdm from './features/dashboard/matches/tdm';
+import Tdm from './features/dashboard/matches/Tdm';
 import JoinTDM from './features/dashboard/matches/JoinTDM';
 
 function App() {
