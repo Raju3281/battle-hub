@@ -3,8 +3,9 @@ import { NavLink, Outlet } from "react-router-dom";
 export default function Matches() {
   const tabs = [
     { path: "squad", label: "Squad" },
-    { path: "duo", label: "Duo" },
-    { path: "solo", label: "Solo" },
+    { path: "tdm", label: "TDM" },
+    // { path: "duo", label: "Duo" },
+    // { path: "solo", label: "Solo" },
   ];
 
   return (

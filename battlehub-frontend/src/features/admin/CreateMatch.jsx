@@ -25,6 +25,8 @@ export default function CreateMatch() {
   const [matches, setMatches] = useState([]);
   const [viewData, setViewData] = useState(null);
   const [viewLoading, setViewLoading] = useState(false);
+const [members, setMembers] = useState("");
+const [gunType, setGunType] = useState("");
 
   // 🔥 Convert datetime-local → IST (Fix timezone problem)
   const convertToIST = (value) => {
@@ -54,24 +56,36 @@ export default function CreateMatch() {
 
   // Auto Split
   const autoSplit = () => {
-    const total = parseInt(totalPrizePool) || 0;
-    if (!total) return toast.error("Enter total prize pool first!");
+  const total = parseInt(totalPrizePool) || 0;
+  if (!total) return toast.error("Enter total prize pool first!");
 
-    const splits =
-      rankCount === 3
-        ? [0.5, 0.3, 0.2]
-        : rankCount === 5
-        ? [0.4, 0.25, 0.15, 0.1, 0.1]
-        : Array(rankCount).fill(1 / rankCount);
+  let splits = [];
 
-    const distributed = prizes.map((_, i) => ({
-      rank: i + 1,
-      amount: Math.round(total * splits[i]),
-    }));
+  if (rankCount === 1) {
+    splits = [1]; // Full prize to Rank 1
+  } else if (rankCount === 3) {
+    splits = [0.5, 0.3, 0.2];
+  } else if (rankCount === 5) {
+    splits = [0.4, 0.25, 0.15, 0.1, 0.1];
+  } else if (rankCount === 10) {
+    splits = [0.25, 0.18, 0.14, 0.11, 0.08, 0.07, 0.06, 0.05, 0.03, 0.03];
+  } else {
+    splits = Array(rankCount).fill(1 / rankCount); // fallback equal split
+  }
 
-    setPrizes(distributed);
-  };
+  const distributed = splits.map((ratio, i) => ({
+    rank: i + 1,
+    amount: Math.round(total * ratio),
+  }));
 
+  setPrizes(distributed);
+};
+useEffect(() => {
+  setPrizes(Array.from({ length: rankCount }, (_, i) => ({
+    rank: i + 1,
+    amount: "",
+  })));
+}, [rankCount]);
   // Load matches
   const fetchMatches = async () => {
     try {
@@ -92,23 +106,32 @@ export default function CreateMatch() {
     setMessage("");
     setLoading(true);
 
-    const matchData = {
-      matchName,
-      matchType,
-      entryFee,
-      prizePool: totalPrizePool,
-      matchTime: convertToIST(matchTime), // <-- FIXED HERE
-      prizeDistribution: prizes,
-      highestKillBonus: highestKill,
-      remarks,
-    };
+   const matchData = {
+  matchName,
+  matchType,  // keep matchType for structure (if needed), or remove if backend doesn't need it
+  matchMap:
+    matchType === "tdm"
+      ? `tdm,${members},${gunType}` // 👉 combined field
+      : matchType, // 👉 solo / duo / squad normal cases
+  entryFee,
+  prizePool: totalPrizePool,
+  matchTime: convertToIST(matchTime),
+  prizeDistribution: prizes,
+  highestKillBonus: highestKill,
+  remarks,
+};
+
 
     try {
       await api.post("/matches/create", matchData);
       setMessage("✅ Match created successfully!");
+       toast.success("✅ Match created successfully!");
       fetchMatches();
 
       // reset
+      setGunType("");
+      setMembers("");
+      setMatchType("squad");
       setMatchName("");
       setEntryFee("");
       setTotalPrizePool("");
@@ -171,8 +194,41 @@ export default function CreateMatch() {
             className="bg-gray-800 text-white p-3 rounded border border-gray-700"
           >
             <option value="squad">Squad</option>
+            <option value="tdm">TDM</option>
+            {/* <option value="solo">Solo</option> */}
           </select>
         </div>
+{matchType === "tdm" && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    {/* Members Dropdown */}
+    <select
+      value={members}
+      onChange={(e) => setMembers(e.target.value)}
+      className="bg-gray-800 text-white p-3 rounded border border-gray-700"
+      required
+    >
+      <option value="">Select Members</option>
+      <option value="1v1">1v1</option>
+      <option value="2v2">2v2</option>
+      <option value="3v3">3v3</option>
+      <option value="4v4">4v4</option>
+    </select>
+
+    {/* Gun Type Dropdown */}
+    <select
+      value={gunType}
+      onChange={(e) => setGunType(e.target.value)}
+      className="bg-gray-800 text-white p-3 rounded border border-gray-700"
+      required
+    >
+      <option value="">Select Gun Type</option>
+      <option value="M24">M24</option>
+      <option value="M4">M4</option>
+      <option value="SCAR-L">SCAR-L</option>
+      <option value="Shotgun">Shotgun</option>
+    </select>
+  </div>
+)}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <input
@@ -216,6 +272,7 @@ export default function CreateMatch() {
               onChange={(e) => setRankCount(parseInt(e.target.value))}
               className="bg-gray-800 text-white p-2 rounded border border-gray-700"
             >
+               <option value="1">Top 1</option>
               <option value="3">Top 3</option>
               <option value="5">Top 5</option>
               <option value="10">Top 10</option>

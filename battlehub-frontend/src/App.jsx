@@ -29,6 +29,8 @@ import HelpSupport from './features/dashboard/Help';
 import ForgotPassword from './features/auth/ForgotPassword';
 import ReferAndEarn from './features/dashboard/ReferAndEarn';
 import AdminReferPanel from './features/admin/AdminReferPanel';
+import Tdm from './features/dashboard/matches/tdm';
+import JoinTDM from './features/dashboard/matches/JoinTDM';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -58,6 +60,8 @@ function App() {
 
               <Route path="solo" element={<Solo />} />
               <Route path="solo/join" element={<JoinSolo />} />
+              <Route path="tdm" element={<Tdm />} />
+              <Route path="tdm/join/:matchId" element={<JoinTDM />} />
               
             </Route>
 
