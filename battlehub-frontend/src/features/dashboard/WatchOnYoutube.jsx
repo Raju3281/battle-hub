@@ -1,6 +1,22 @@
 import { useEffect, useState } from "react";
 import api from "../../utils/api";
 
+// 🔥 Convert ANY YouTube link → Proper embed URL
+const convertToEmbedUrl = (url) => {
+  if (!url) return "";
+
+  if (url.includes("embed")) return url;
+
+  // Extract video ID (works for all formats)
+  const regex =
+    /(?:youtube\.com\/(?:watch\?v=|live\/|shorts\/)|youtu\.be\/)([^"&?\/ ]{11})/;
+
+  const match = url.match(regex);
+  const videoId = match ? match[1] : null;
+
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+};
+
 export default function WatchOnYouTube() {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,12 +26,9 @@ export default function WatchOnYouTube() {
       const res = await api.get("/matches/with-links");
       const data = res.data.matches || [];
 
-      // Convert normal YouTube links → embed format
       const processed = data.map((m) => ({
         ...m,
-        youtubeUrl: m.matchLink
-          .replace("watch?v=", "embed/")
-          .replace("youtu.be/", "youtube.com/embed/"),
+        youtubeUrl: convertToEmbedUrl(m.matchLink),
       }));
 
       setMatches(processed);
@@ -30,11 +43,7 @@ export default function WatchOnYouTube() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="text-center text-gray-400 py-10">
-        Loading streams...
-      </div>
-    );
+    return <div className="text-center text-gray-400 py-10">Loading streams...</div>;
   }
 
   return (
@@ -54,13 +63,20 @@ export default function WatchOnYouTube() {
             >
               {/* YouTube iframe */}
               <div className="relative w-full h-[250px] sm:h-[300px]">
-                <iframe
-                  className="absolute inset-0 w-full h-full"
-                  src={match.youtubeUrl}
-                  title={match.matchName}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
+                {match.youtubeUrl ? (
+                  <iframe
+                    className="absolute inset-0 w-full h-full rounded-lg"
+                    src={`${match.youtubeUrl}?autoplay=0&mute=0&controls=1`}
+                    title={match.matchName}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    loading="lazy"
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <div className="flex items-center justify-center w-full h-full text-gray-400 text-sm">
+                    🔗 Invalid or Missing YouTube Link
+                  </div>
+                )}
               </div>
 
               {/* Match Info */}
@@ -72,15 +88,17 @@ export default function WatchOnYouTube() {
                 <div className="text-gray-300 space-y-1 text-sm sm:text-base">
                   <p>
                     <span className="text-yellow-400 font-semibold">Type:</span>{" "}
-                    {match.matchType}
+                    {match.matchType?.toUpperCase()}
                   </p>
                   <p>
                     <span className="text-yellow-400 font-semibold">Map:</span>{" "}
-                    {match.map || "Unknown"}
+                    {match.matchMap || "Unknown"}
                   </p>
                   <p>
                     <span className="text-yellow-400 font-semibold">Time:</span>{" "}
-                    {new Date(match.matchTime).toLocaleString()}
+                    {new Date(match.matchTime).toLocaleString("en-IN", {
+                      hour12: true,
+                    })}
                   </p>
                 </div>
               </div>
