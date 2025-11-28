@@ -62,7 +62,7 @@ export default function Register() {
         phone: formData.phone,
         email: formData.email.trim(),
         password: formData.password.trim(),
-        referralCode: formData.referralCode || "",
+        referralCode: ""//formData.referralCode || "",
       });
 
       toast.error("🎉 Registration successful! You can now log in.");
@@ -189,7 +189,7 @@ export default function Register() {
               {showConfirmPassword ? "🙈" : "👁️"}
             </span>
           </div>
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium mb-1">Referral Code</label>
             <input
               type="text"
@@ -200,7 +200,7 @@ export default function Register() {
               className="w-full p-2.5 sm:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-500 text-sm sm:text-base"
               placeholder="Enter Referral Code (Optional)"
             />
-          </div>
+          </div> */}
           {/* Submit */}
           <button
             type="submit"

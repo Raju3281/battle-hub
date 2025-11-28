@@ -15,7 +15,7 @@ export default function DashboardLayout() {
     { name: "Completed Matches", path: "completed" },
     { name: "Recharge", path: "recharge" },
     { name: "Watch on Youtube", path: "watch" },
-    { name: "Refer and Earn", path: "refer-earn" },
+    // { name: "Refer and Earn", path: "refer-earn" },
     { name: "💬 Help/Suppport", path: "help-support" },
   ];
 
