@@ -32,7 +32,12 @@ export default function Matches() {
           </NavLink>
         ))}
       </div>
-
+      <h2 className="text-[12px] font-bold text-red-400 text-center mb-2">
+          Room ID & Password will be shared via registered email before 10 min of match start time
+        </h2>
+        {/* <h2 className="text-sm font-bold text-red-400 text-center mb-2">
+          Match will be started at exact time, no refund if not joined
+        </h2> */}
       {/* Nested route content */}
       <div className="bg-gray-900/60 border border-gray-800 p-6 rounded-2xl min-h-[60vh]">
         <Outlet />

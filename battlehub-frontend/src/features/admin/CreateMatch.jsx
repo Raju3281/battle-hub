@@ -223,7 +223,7 @@ useEffect(() => {
     >
       <option value="">Select Gun Type</option>
       <option value="M24">M24</option>
-      <option value="M4">M4</option>
+      <option value="M416">M416</option>
       <option value="SCAR-L">SCAR-L</option>
       <option value="Shotgun">Shotgun</option>
     </select>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../utils/api";
+import moment from "moment";
 
 // 🔥 Convert ANY YouTube link → Proper embed URL
 const convertToEmbedUrl = (url) => {
@@ -90,15 +91,13 @@ export default function WatchOnYouTube() {
                     <span className="text-yellow-400 font-semibold">Type:</span>{" "}
                     {match.matchType?.toUpperCase()}
                   </p>
-                  <p>
+                  {/* <p>
                     <span className="text-yellow-400 font-semibold">Map:</span>{" "}
                     {match.matchMap || "Unknown"}
-                  </p>
+                  </p> */}
                   <p>
                     <span className="text-yellow-400 font-semibold">Time:</span>{" "}
-                    {new Date(match.matchTime).toLocaleString("en-IN", {
-                      hour12: true,
-                    })}
+                   {moment(match.matchTime).utc().format("DD/MM/YYYY hh:mm A")}
                   </p>
                 </div>
               </div>
@@ -110,7 +109,7 @@ export default function WatchOnYouTube() {
       {/* Footer */}
       <p className="text-gray-400 text-center mt-10 text-sm">
         📺 Streams hosted on the official{" "}
-        <span className="text-yellow-400">BattleHub YouTube Channel</span>
+        <span className="text-yellow-400">Breakdrawn YouTube Channel</span>
       </p>
     </div>
   );

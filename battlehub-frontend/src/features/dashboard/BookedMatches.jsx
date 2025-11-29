@@ -185,7 +185,7 @@ export default function BookedMatches() {
                     onClick={() => openModal(match.matchId)}
                     className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-4 py-2 rounded-lg transition-all"
                   >
-                    View Details
+                    View Slot Details
                   </button>
                 </div>
               </div>

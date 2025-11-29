@@ -93,13 +93,6 @@ export default function JoinSquad() {
         <h2 className="text-2xl font-bold text-yellow-400 text-center mb-6">
           Join Squad Match 🎮
         </h2>
-        <h2 className="text-sm font-bold text-red-400 text-center mb-2">
-          Room ID & Password will be shared before 10 min of match start time
-        </h2>
-        <h2 className="text-sm font-bold text-red-400 text-center mb-2">
-          Match will be started at exact time, no refund if not joined
-        </h2>
-
         <form onSubmit={handleSubmit} className="space-y-6">
 
           {/* Team Name */}
