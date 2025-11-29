@@ -195,7 +195,7 @@ useEffect(() => {
           >
             <option value="squad">Squad</option>
             <option value="tdm">TDM</option>
-            {/* <option value="solo">Solo</option> */}
+            <option value="solo">Solo</option>
           </select>
         </div>
 {matchType === "tdm" && (

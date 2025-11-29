@@ -59,7 +59,7 @@ function App() {
               <Route path="duo/join" element={<JoinDuo />} />
 
               <Route path="solo" element={<Solo />} />
-              <Route path="solo/join" element={<JoinSolo />} />
+              <Route path="solo/join/:matchId" element={<JoinSolo />} />
               <Route path="tdm" element={<Tdm />} />
               <Route path="tdm/join/:matchId" element={<JoinTDM />} />
               
