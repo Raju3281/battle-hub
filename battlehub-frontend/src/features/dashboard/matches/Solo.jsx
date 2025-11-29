@@ -77,7 +77,7 @@ export default function Solo() {
 
   return (
     <div>
-      <h3 className="text-xl font-bold text-red-400 mb-4">Solo Matches</h3>
+      <h3 className="text-xl font-bold text-yellow-400 mb-4">Solo Matches</h3>
 
       <div className="grid gap-4">
         {matches
