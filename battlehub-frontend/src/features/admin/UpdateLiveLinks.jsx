@@ -77,7 +77,7 @@ export default function UpdateLiveLinks() {
         <option value="">-- Select Match --</option>
         {matches.map((match) => (
           <option key={match._id} value={match._id}>
-            {match.matchName} —{moment(match.matchTime).utc().format("DD/MM/YYYY hh:mm A")}
+            {match.matchName}({match.matchType}) —{moment(match.matchTime).utc().format("DD/MM/YYYY hh:mm A")}
           </option>
         ))}
       </select>
