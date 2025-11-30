@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import api from "../../utils/api";
+import moment from "moment";
 
 export default function AdminMatchDetails() {
   const [matches, setMatches] = useState([]);
@@ -45,7 +46,7 @@ export default function AdminMatchDetails() {
           {matches.map((m) => (
             <option key={m._id} value={m._id}>
               {m.matchName} ({m.matchType.toUpperCase()}) - 
-              {new Date(m.matchTime).toLocaleString()}
+              {moment(m.matchTime).utc().format("DD/MM/YYYY hh:mm A")}
             </option>
           ))}
         </select>
