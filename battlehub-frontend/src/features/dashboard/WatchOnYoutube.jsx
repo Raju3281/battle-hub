@@ -97,7 +97,7 @@ export default function WatchOnYouTube() {
                   </p> */}
                   <p>
                     <span className="text-yellow-400 font-semibold">Time:</span>{" "}
-                   {moment(match.matchTime).utc().format("DD/MM/YYYY hh:mm A")}
+                    {moment(match.matchTime).utc().format("DD/MM/YYYY hh:mm A")}
                   </p>
                 </div>
               </div>
@@ -109,7 +109,14 @@ export default function WatchOnYouTube() {
       {/* Footer */}
       <p className="text-gray-400 text-center mt-10 text-sm">
         📺 Streams hosted on the official{" "}
-        <span className="text-yellow-400">Breakdrawn YouTube Channel</span>
+        <a
+          href="https://www.youtube.com/@BreakDrawnGaming"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-yellow-400 underline hover:text-yellow-300"
+        >
+          Breakdrawn YouTube Channel
+        </a>
       </p>
     </div>
   );
