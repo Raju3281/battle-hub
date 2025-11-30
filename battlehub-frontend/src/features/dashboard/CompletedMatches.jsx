@@ -31,7 +31,7 @@ export default function CompletedMatches() {
   return (
     <div className="w-full">
       <h2 className="text-2xl font-bold text-yellow-400 mb-6 text-center">
-        Today Completed Matches 🏆
+        Completed Matches 🏆
       </h2>
 
       {completedMatches.length > 0 ? (

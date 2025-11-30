@@ -31,6 +31,7 @@ import ReferAndEarn from './features/dashboard/ReferAndEarn';
 import AdminReferPanel from './features/admin/AdminReferPanel';
 import Tdm from './features/dashboard/matches/Tdm';
 import JoinTDM from './features/dashboard/matches/JoinTDM';
+import AdminMatchDetails from './features/admin/AdminMatchDetails';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -85,6 +86,7 @@ function App() {
             <Route path="prize" element={<SetPrizePool />} />
             {/* <Route path="schedule" element={<Schedule />} /> */}
             <Route path="update-results" element={<UpdateResults />} />
+            <Route path="match-teams" element={<AdminMatchDetails />} />
             <Route path="registered-users" element={<AllUsers />} />
             <Route path="live-links" element={<UpdateLiveLinks />} />
             <Route path="id-pass" element={<RoomIdPass />} />
