@@ -58,8 +58,8 @@ export default function Register() {
       setLoading(true);
 
       const { data } = await api.post("/auth/register", {
-        username: formData.username.trim(),
-        phone: formData.phone,
+        // username: formData.username.trim(),
+        // phone: formData.phone,
         email: formData.email.trim(),
         password: formData.password.trim(),
         referralCode: ""//formData.referralCode || "",
@@ -82,7 +82,7 @@ export default function Register() {
     if (referralCode) {
       setFormData((prev) => ({
         ...prev,
-        referralCode   // 👈 auto-fill
+        referralCode  //auto-fill
       }));
     }
   }, [referralCode]);
@@ -98,7 +98,7 @@ export default function Register() {
         <form onSubmit={handleSubmit} className="space-y-4">
 
           {/* Username */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium mb-1">Username</label>
             <input
               type="text"
@@ -109,10 +109,10 @@ export default function Register() {
               className="w-full p-2.5 sm:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-500 text-sm sm:text-base"
               placeholder="Enter your username"
             />
-          </div>
+          </div> */}
 
           {/* Phone */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium mb-1">Phone</label>
             <input
               type="tel"
@@ -126,7 +126,7 @@ export default function Register() {
               className="w-full p-2.5 sm:p-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:border-yellow-400 placeholder-gray-500 text-sm sm:text-base"
               placeholder="Enter your mobile number"
             />
-          </div>
+          </div> */}
 
           {/* Email */}
           <div>
