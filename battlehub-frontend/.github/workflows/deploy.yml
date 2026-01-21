@@ -1,0 +1,29 @@
+name: Deploy Frontend (Battle-Hub UI)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy frontend to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+            cd /home/ubuntu/battle-hub
+
+            echo "Pulling latest frontend code"
+            git pull origin main
+
+            echo "Installing frontend dependencies"
+            npm install
+
+            echo "Building frontend"
+            npm run build
