@@ -3,8 +3,8 @@ import axios from "axios";
 import EncryptedStorage from "./encryptedStorage";
 
 // 🔹 Backend Base URL
-// const BASE_URL = "https://battle-hub-server.vercel.app/api"; // change when deployed
-const BASE_URL = "/api"; // for local development
+const BASE_URL = "https://battle-hub-server.vercel.app/api"; // change when deployed
+// const BASE_URL = "/api"; // for local development
 
 // 🔹 Create a single axios instance
 const api = axios.create({
